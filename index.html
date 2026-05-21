@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Viccs Pricing Pro</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  
+  <!-- Babel (Para transpilar o JSX no navegador) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-200 antialiased selection:bg-purple-500/30">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    const BASE_SERVICES = [
+      { id: 'id_visual', name: 'Identidade Visual Completa', basePrice: 650, category: 'design', icon: '🎨' },
+      { id: 'logo', name: 'Logotipo (Individual)', basePrice: 200, category: 'design', icon: '✨' },
+      { id: 'post_single', name: 'Post Instagram (Avulso)', basePrice: 50, category: 'social', icon: '📱' },
+      { id: 'pack_basic', name: 'Pacote Mensal Básico', desc: 'Até 10 posts', basePrice: 450, category: 'mensal', icon: '📦' },
+      { id: 'pack_inter', name: 'Pacote Mensal Intermediário', desc: '15 posts + 2 motions', basePrice: 700, category: 'mensal', icon: '🚀' },
+      { id: 'pack_adv', name: 'Pacote Mensal Avançado', desc: '20+ posts, motions, menus, etc.', basePrice: 1000, category: 'mensal', icon: '💎' },
+    ];
+
+    const COMPLEXITY_LEVELS = [
+      { id: 'simples', name: 'Simples', multiplier: 0.9, desc: 'Layouts básicos, poucas variações' },
+      { id: 'normal', name: 'Normal', multiplier: 1.0, desc: 'Padrão do portfólio' },
+      { id: 'complexo', name: 'Complexo', multiplier: 1.3, desc: 'Muitos detalhes, ilustrações customizadas' },
+      { id: 'muito_complexo', name: 'Muito Complexo', multiplier: 1.6, desc: 'Exige pesquisa profunda, 3D ou assets difíceis' },
+    ];
+
+    const DEADLINE_LEVELS = [
+      { id: 'flexivel', name: 'Flexível', multiplier: 0.95, desc: 'Sem pressa (15+ dias)' },
+      { id: 'padrao', name: 'Padrão', multiplier: 1.0, desc: 'Prazo normal (7-14 dias)' },
+      { id: 'urgente', name: 'Urgente', multiplier: 1.3, desc: 'Prioridade (3-6 dias)' },
+      { id: 'rush', name: 'Para Ontem (Rush)', multiplier: 1.6, desc: 'Menos de 48h (Fura-fila)' },
+    ];
+
+    const formatCurrency = (value) => {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(value);
+    };
+
+    function PricingApp() {
+      const [selectedServiceId, setSelectedServiceId] = useState(BASE_SERVICES[0].id);
+      const [complexity, setComplexity] = useState('normal');
+      const [deadline, setDeadline] = useState('padrao');
+      const [extraRevisions, setExtraRevisions] = useState(0);
+      const [estimatedHours, setEstimatedHours] = useState(10);
+      const [isCopied, setIsCopied] = useState(false);
+
+      const REVISION_COST = 50;
+
+      const selectedService = useMemo(() => 
+        BASE_SERVICES.find(s => s.id === selectedServiceId) || BASE_SERVICES[0]
+      , [selectedServiceId]);
+
+      const activeComplexity = useMemo(() => 
+        COMPLEXITY_LEVELS.find(c => c.id === complexity) || COMPLEXITY_LEVELS[1]
+      , [complexity]);
+
+      const activeDeadline = useMemo(() => 
+        DEADLINE_LEVELS.find(d => d.id === deadline) || DEADLINE_LEVELS[1]
+      , [deadline]);
+
+      const calculationDetails = useMemo(() => {
+        let base = selectedService.basePrice;
+        let complexityAdd = (base * activeComplexity.multiplier) - base;
+        let deadlineAdd = (base * activeDeadline.multiplier) - base;
+        let revisionsAdd = extraRevisions * REVISION_COST;
+
+        let total = base + complexityAdd + deadlineAdd + revisionsAdd;
+        let hourlyRate = estimatedHours > 0 ? total / estimatedHours : 0;
+
+        return {
+          base,
+          complexityAdd,
+          deadlineAdd,
+          revisionsAdd,
+          total,
+          hourlyRate
+        };
+      }, [selectedService, activeComplexity, activeDeadline, extraRevisions, estimatedHours]);
+
+      const handleCopyProposal = () => {
+        const text = `Olá! Segue o orçamento para o projeto:
+
+Serviço: ${selectedService.name} ${selectedService.desc ? `(${selectedService.desc})` : ''}
+Complexidade: ${activeComplexity.name}
+Prazo: ${activeDeadline.name}
+Revisões Extras: ${extraRevisions}
+
+Investimento Total: ${formatCurrency(calculationDetails.total)}
+
+*Valores sujeitos a alteração caso o escopo mude.*
+Qualquer dúvida, estou à disposição! 
+- Viccs Design (viccsdesign.vercel.app)`;
+
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+          document.execCommand('copy');
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 2000);
+        } catch (err) {
+          console.error('Falha ao copiar', err);
+        }
+        document.body.removeChild(textArea);
+      };
+
+      return (
+        <div className="min-h-screen p-4 md:p-8">
+          <div className="max-w-6xl mx-auto space-y-8">
+            
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-800">
+              <div>
+                <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
+                  Viccs Pricing Pro
+                </h1>
+                <p className="text-slate-400 mt-1 flex items-center gap-2">
+                  Calculadora de Projetos & Precificação Justa
+                  <a href="https://viccsdesign.vercel.app/" target="_blank" rel="noreferrer" className="inline-flex items-center text-xs bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded transition-colors text-purple-300">
+                    Acessar Portfólio ↗
+                  </a>
+                </p>
+              </div>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-8 space-y-8">
+                
+                <section className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                  <h2 className="text-xl font-semibold mb-4 text-white flex items-center gap-2">
+                    <svg className="w-5 h-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    1. Serviço Base
+                  </h2>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {BASE_SERVICES.map((service) => (
+                      <button
+                        key={service.id}
+                        onClick={() => setSelectedServiceId(service.id)}
+                        className={`text-left p-4 rounded-xl transition-all border ${
+                          selectedServiceId === service.id 
+                          ? 'bg-purple-900/20 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.15)]' 
+                          : 'bg-slate-800/50 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
+                        }`}
+                      >
+                        <div className="text-2xl mb-2">{service.icon}</div>
+                        <div className="font-medium text-slate-100">{service.name}</div>
+                        {service.desc && <div className="text-xs text-slate-400 mt-1">{service.desc}</div>}
+                        <div className="mt-3 font-semibold text-purple-400">{formatCurrency(service.basePrice)}</div>
+                      </button>
+                    ))}
+                  </div>
+                </section>
+
+                {}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <section className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                    <h2 className="text-xl font-semibold mb-4 text-white">2. Nível de Complexidade</h2>
+                    <div className="space-y-3">
+                      {COMPLEXITY_LEVELS.map((lvl) => (
+                        <label key={lvl.id} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${complexity === lvl.id ? 'bg-blue-900/20 border-blue-500' : 'bg-slate-800/30 border-slate-700 hover:bg-slate-800'}`}>
+                          <input 
+                            type="radio" 
+                            name="complexity" 
+                            value={lvl.id}
+                            checked={complexity === lvl.id}
+                            onChange={(e) => setComplexity(e.target.value)}
+                            className="mt-1 w-4 h-4 text-blue-500 bg-slate-900 border-slate-600 focus:ring-blue-500"
+                          />
+                          <div>
+                            <div className="font-medium text-slate-200">{lvl.name}</div>
+                            <div className="text-xs text-slate-400">{lvl.desc}</div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="space-y-8">
+                    <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                      <h2 className="text-xl font-semibold mb-4 text-white">3. Prazo / Urgência</h2>
+                      <div className="space-y-3">
+                        {DEADLINE_LEVELS.map((lvl) => (
+                          <label key={lvl.id} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${deadline === lvl.id ? 'bg-orange-900/20 border-orange-500' : 'bg-slate-800/30 border-slate-700 hover:bg-slate-800'}`}>
+                            <div className="flex items-center gap-3">
+                              <input 
+                                type="radio" 
+                                name="deadline" 
+                                value={lvl.id}
+                                checked={deadline === lvl.id}
+                                onChange={(e) => setDeadline(e.target.value)}
+                                className="w-4 h-4 text-orange-500 bg-slate-900 border-slate-600 focus:ring-orange-500"
+                              />
+                              <div>
+                                <div className="font-medium text-slate-200">{lvl.name}</div>
+                                <div className="text-xs text-slate-400">{lvl.desc}</div>
+                              </div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                      <h2 className="text-xl font-semibold mb-4 text-white">4. Ajustes Finos</h2>
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                          Revisões Extras (Além das inclusas)
+                        </label>
+                        <div className="flex items-center gap-4">
+                          <button onClick={() => setExtraRevisions(Math.max(0, extraRevisions - 1))} className="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xl font-bold">-</button>
+                          <span className="text-xl font-semibold w-8 text-center">{extraRevisions}</span>
+                          <button onClick={() => setExtraRevisions(extraRevisions + 1)} className="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xl font-bold">+</button>
+                          <span className="text-sm text-slate-400 ml-2">(+ {formatCurrency(REVISION_COST)} cada)</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2 flex justify-between">
+                          <span>Estimativa de Horas (p/ métrica)</span>
+                          <span className="text-purple-400 font-semibold">{estimatedHours}h</span>
+                        </label>
+                        <input 
+                          type="range" 
+                          min="1" 
+                          max="80" 
+                          value={estimatedHours}
+                          onChange={(e) => setEstimatedHours(parseInt(e.target.value))}
+                          className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                        />
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+
+              {}
+              <div className="lg:col-span-4">
+                <div className="sticky top-8 bg-gradient-to-b from-slate-900 to-slate-950 rounded-3xl p-6 border border-slate-800 shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full"></div>
+                  <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-32 h-32 bg-blue-500/20 blur-3xl rounded-full"></div>
+
+                  <h2 className="text-lg font-medium text-slate-300 mb-6 uppercase tracking-wider text-center">Resumo do Orçamento</h2>
+                  
+                  <div className="space-y-4 mb-8 relative z-10">
+                    <div className="flex justify-between items-end border-b border-slate-800 pb-2">
+                      <div>
+                        <div className="text-sm text-slate-400">Serviço Base</div>
+                        <div className="font-medium text-slate-200 truncate max-w-[180px]" title={selectedService.name}>
+                          {selectedService.name}
+                        </div>
+                      </div>
+                      <div className="font-semibold text-white">{formatCurrency(calculationDetails.base)}</div>
+                    </div>
+
+                    {calculationDetails.complexityAdd !== 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="text-slate-400">Complexidade ({activeComplexity.name})</div>
+                        <div className={calculationDetails.complexityAdd > 0 ? "text-red-400" : "text-green-400"}>
+                          {calculationDetails.complexityAdd > 0 ? '+' : ''}{formatCurrency(calculationDetails.complexityAdd)}
+                        </div>
+                      </div>
+                    )}
+
+                    {calculationDetails.deadlineAdd !== 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="text-slate-400">Prazo ({activeDeadline.name})</div>
+                        <div className={calculationDetails.deadlineAdd > 0 ? "text-red-400" : "text-green-400"}>
+                          {calculationDetails.deadlineAdd > 0 ? '+' : ''}{formatCurrency(calculationDetails.deadlineAdd)}
+                        </div>
+                      </div>
+                    )}
+
+                    {extraRevisions > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="text-slate-400">{extraRevisions}x Revisões Extras</div>
+                        <div className="text-slate-300">
+                          +{formatCurrency(calculationDetails.revisionsAdd)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-slate-950/50 rounded-2xl p-6 border border-purple-500/30 text-center relative z-10 shadow-inner">
+                    <div className="text-sm text-purple-300 mb-1 font-medium">Preço Final Sugerido</div>
+                    <div className="text-4xl md:text-5xl font-bold text-white tracking-tight">
+                      {formatCurrency(calculationDetails.total)}
+                    </div>
+                    
+                    <div className="mt-4 pt-4 border-t border-slate-800/50 flex justify-center items-center gap-2">
+                      <div className="text-xs text-slate-400">Métrica:</div>
+                      <div className={`text-sm font-semibold px-2 py-1 rounded ${calculationDetails.hourlyRate > 40 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                        {formatCurrency(calculationDetails.hourlyRate)} / hora
+                      </div>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={handleCopyProposal}
+                    className={`mt-6 w-full py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all relative z-10 ${
+                      isCopied 
+                      ? 'bg-green-600 hover:bg-green-500 text-white shadow-[0_0_20px_rgba(22,163,74,0.4)]' 
+                      : 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)] hover:shadow-[0_0_25px_rgba(147,51,234,0.5)] transform hover:-translate-y-1'
+                    }`}
+                  >
+                    {isCopied ? (
+                      <>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                        Proposta Copiada!
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                        Copiar Resumo p/ Cliente
+                      </>
+                    )}
+                  </button>
+                  <p className="text-xs text-slate-500 text-center mt-4 relative z-10">
+                    Ferramenta interna. Ajuste se necessário.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<PricingApp />);
+  </script>
+</body>
+</html>
