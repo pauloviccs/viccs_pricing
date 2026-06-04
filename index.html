@@ -80,8 +80,6 @@
       { id: 'pix_50_50', name: 'PIX 50% + 50%', fee: 0, icon: '🤝' },
       { id: 'cartao_1x', name: 'Cartão 1x', fee: 0.04, icon: '💳' },
       { id: 'cartao_parcelado', name: 'Cartão Parcelado', fee: 0.06, icon: '💳' },
-      { id: 'boleto', name: 'Boleto', fee: 0, icon: '🧾' },
-      { id: 'permuta', name: 'Permuta / Escambo', fee: 0, icon: '🔄' },
     ];
 
     const CATEGORY_LABELS = [
@@ -125,14 +123,15 @@
       const [observacoes, setObservacoes] = useState(() => loadState('obs', ''));
       const [isCopied, setIsCopied] = useState(false);
       const [isExporting, setIsExporting] = useState(false);
+      const [discountBRL, setDiscountBRL] = useState(() => loadState('discount', 0));
 
       const REVISION_COST = 50;
 
       // Persistência localStorage
       useEffect(() => {
-        const data = { serviceId: selectedServiceId, complexity, deadline, revisions: extraRevisions, hours: estimatedHours, payment: paymentMethod, installments, dimension: dimensionM2, customWidth, customHeight, obs: observacoes, unit: measurementUnit };
+        const data = { serviceId: selectedServiceId, complexity, deadline, revisions: extraRevisions, hours: estimatedHours, payment: paymentMethod, installments, dimension: dimensionM2, customWidth, customHeight, obs: observacoes, unit: measurementUnit, discount: discountBRL };
         Object.entries(data).forEach(([k, v]) => { try { localStorage.setItem('viccs_' + k, JSON.stringify(v)); } catch { } });
-      }, [selectedServiceId, complexity, deadline, extraRevisions, estimatedHours, paymentMethod, installments, dimensionM2, customWidth, customHeight, observacoes, measurementUnit]);
+      }, [selectedServiceId, complexity, deadline, extraRevisions, estimatedHours, paymentMethod, installments, dimensionM2, customWidth, customHeight, observacoes, measurementUnit, discountBRL]);
 
       const selectedService = useMemo(() =>
         BASE_SERVICES.find(s => s.id === selectedServiceId) || BASE_SERVICES[0]
@@ -184,11 +183,13 @@
         let subtotal = base + complexityAdd + deadlineAdd + revisionsAdd;
         let paymentFee = subtotal * activePayment.fee;
         let grandTotal = subtotal + paymentFee;
-        let installmentValue = installments > 1 ? grandTotal / installments : grandTotal;
-        let hourlyRate = estimatedHours > 0 ? grandTotal / estimatedHours : 0;
+        let discount = Math.min(Math.max(0, discountBRL), grandTotal);
+        let finalTotal = grandTotal - discount;
+        let installmentValue = installments > 1 ? finalTotal / installments : finalTotal;
+        let hourlyRate = estimatedHours > 0 ? finalTotal / estimatedHours : 0;
 
-        return { base, complexityAdd, deadlineAdd, revisionsAdd, subtotal, paymentFee, grandTotal, installmentValue, hourlyRate };
-      }, [selectedService, activeComplexity, activeDeadline, extraRevisions, estimatedHours, activePayment, installments, effectiveArea, isAreaBased]);
+        return { base, complexityAdd, deadlineAdd, revisionsAdd, subtotal, paymentFee, grandTotal, discount, finalTotal, installmentValue, hourlyRate };
+      }, [selectedService, activeComplexity, activeDeadline, extraRevisions, estimatedHours, activePayment, installments, effectiveArea, isAreaBased, discountBRL]);
 
       const dimensionDisplay = useMemo(() => {
         if (customWidth && customHeight) {
@@ -202,15 +203,16 @@
         const obsText = observacoes.trim() ? `\nObservações: ${observacoes.trim()}` : '';
         const parcText = installments > 1 ? ` — ${installments}x de ${formatCurrency(calculationDetails.installmentValue)}` : '';
         const pixText = (activePayment.id.includes('pix')) ? `\n\nPagamento via PIX:\nChave: ${PIX_KEY}\nTitular: ${PIX_NAME}` : '';
+        const descText = calculationDetails.discount > 0 ? `\nDesconto: -${formatCurrency(calculationDetails.discount)}` : '';
         const text = `Olá! Segue o orçamento para o projeto:
 
 Serviço: ${selectedService.name} ${selectedService.desc ? `(${selectedService.desc})` : ''}${dimText}
 Complexidade: ${activeComplexity.name}
 Prazo: ${activeDeadline.name}
 Revisões Extras: ${extraRevisions}
-Forma de Pagamento: ${activePayment.name}${parcText}${pixText}${obsText}
+Forma de Pagamento: ${activePayment.name}${parcText}${pixText}${obsText}${descText}
 
-Investimento Total: ${formatCurrency(calculationDetails.grandTotal)}
+Investimento Total: ${formatCurrency(calculationDetails.finalTotal)}
 
 *Valores sujeitos a alteração caso o escopo mude.*
 Qualquer dúvida, estou à disposição! 
@@ -244,6 +246,7 @@ Qualquer dúvida, estou à disposição!
             setCustomHeight('');
             setMeasurementUnit('m');
             setObservacoes('');
+            setDiscountBRL(0);
         }
       };
 
@@ -276,7 +279,7 @@ Qualquer dúvida, estou à disposição!
       };
 
       return (
-        <div className="min-h-screen p-4 md:p-8">
+        <div className="min-h-screen p-4 md:p-8 pb-28 lg:pb-8">
           <div className="max-w-6xl mx-auto space-y-8">
 
             <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-800">
@@ -292,19 +295,20 @@ Qualquer dúvida, estou à disposição!
                   draggable={false} 
                 />
               </div>
-                <p className="text-slate-400 mt-1 flex items-center gap-2">
-                  Calculadora de Projetos & Precificação Justa
+                <p className="text-slate-400 mt-1 flex items-center gap-2 text-xs sm:text-base">
+                  <span className="hidden sm:inline">Calculadora de Projetos & Precificação Justa</span>
+                  <span className="sm:hidden">Calculadora & Precificação</span>
                   <a href="https://viccsdesign.vercel.app/" target="_blank" rel="noreferrer" className="inline-flex items-center text-xs bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded transition-colors text-purple-300">
                     Acessar Portfólio ↗
                   </a>
                 </p>
               </div>
               <div className="flex gap-3 w-full md:w-auto">
-                <button onClick={handleReset} className="flex-1 md:flex-none px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 border border-slate-700">
+                <button onClick={handleReset} className="flex-1 md:flex-none px-3 sm:px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-1 sm:gap-2 border border-slate-700">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
                   Limpar
                 </button>
-                <button onClick={handleExportPDF} disabled={isExporting} className="flex-1 md:flex-none px-4 py-2 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2">
+                <button onClick={handleExportPDF} disabled={isExporting} className="flex-1 md:flex-none px-3 sm:px-4 py-2 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-1 sm:gap-2">
                   {isExporting ? 'Gerando...' : (
                     <>
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
@@ -496,6 +500,19 @@ Qualquer dúvida, estou à disposição!
                           className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
                         />
                       </div>
+                      <div className="mt-6">
+                        <label className="block text-sm font-medium text-slate-300 mb-2 flex justify-between">
+                          <span>💰 Desconto (R$)</span>
+                          {discountBRL > 0 && <span className="text-green-400 font-semibold">-{formatCurrency(discountBRL)}</span>}
+                        </label>
+                        <input
+                          type="number" step="1" min="0" placeholder="Ex: 50"
+                          value={discountBRL || ''}
+                          onChange={(e) => setDiscountBRL(Math.max(0, parseFloat(e.target.value) || 0))}
+                          className="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-sm text-slate-200 placeholder-slate-500 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none"
+                        />
+                        <p className="text-xs text-slate-500 mt-1">Desconto manual aplicado sobre o valor total.</p>
+                      </div>
                     </div>
                   </section>
                 </div>
@@ -533,14 +550,7 @@ Qualquer dúvida, estou à disposição!
                         />
                       </div>
                     )}
-                    {paymentMethod === 'permuta' && (
-                      <div className="mt-4">
-                        <textarea placeholder="Descreva a permuta..." value={observacoes}
-                          onChange={(e) => setObservacoes(e.target.value)}
-                          className="w-full h-20 bg-slate-800 border border-slate-600 rounded-lg p-3 text-sm text-slate-200 placeholder-slate-500 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 outline-none resize-none"
-                        />
-                      </div>
-                    )}
+
                   </section>
 
                   <section className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
@@ -616,12 +626,19 @@ Qualquer dúvida, estou à disposição!
                         <div className="text-slate-400 text-xs">incluso no base</div>
                       </div>
                     )}
+
+                    {calculationDetails.discount > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="text-slate-400">Desconto</div>
+                        <div className="text-green-400">-{formatCurrency(calculationDetails.discount)}</div>
+                      </div>
+                    )}
                   </div>
 
                   <div className="bg-slate-950/50 rounded-2xl p-6 border border-purple-500/30 text-center relative z-10 shadow-inner">
                     <div className="text-sm text-purple-300 mb-1 font-medium">Preço Final Sugerido</div>
-                    <div className="text-4xl md:text-5xl font-bold text-white tracking-tight">
-                      {formatCurrency(calculationDetails.grandTotal)}
+                    <div className="text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+                      {formatCurrency(calculationDetails.finalTotal)}
                     </div>
 
                     {installments > 1 && (
@@ -702,10 +719,11 @@ Qualquer dúvida, estou à disposição!
                   {calculationDetails.deadlineAdd !== 0 && <div className="flex justify-between"><span className="text-slate-600">Adicional de Prazo</span> <span className="text-slate-900 font-medium">{calculationDetails.deadlineAdd > 0 ? '+' : ''}{formatCurrency(calculationDetails.deadlineAdd)}</span></div>}
                   {extraRevisions > 0 && <div className="flex justify-between"><span className="text-slate-600">Revisões Extras ({extraRevisions}x)</span> <span className="text-slate-900 font-medium">+{formatCurrency(calculationDetails.revisionsAdd)}</span></div>}
                   {calculationDetails.paymentFee > 0 && <div className="flex justify-between"><span className="text-slate-600">Taxa de Pagamento</span> <span className="text-slate-900 font-medium">+{formatCurrency(calculationDetails.paymentFee)}</span></div>}
+                  {calculationDetails.discount > 0 && <div className="flex justify-between"><span className="text-slate-600">Desconto</span> <span className="text-green-600 font-medium">-{formatCurrency(calculationDetails.discount)}</span></div>}
                   
                   <div className="flex justify-between items-center pt-4 mt-2 border-t border-slate-200">
                     <span className="text-base font-semibold text-slate-900">Investimento Total</span> 
-                    <span className="text-2xl font-bold text-purple-600">{formatCurrency(calculationDetails.grandTotal)}</span>
+                    <span className="text-2xl font-bold text-purple-600">{formatCurrency(calculationDetails.finalTotal)}</span>
                   </div>
                 </div>
               </div>
@@ -735,6 +753,34 @@ Qualquer dúvida, estou à disposição!
             
             <div className="mt-12 text-center text-xs text-slate-500 border-t border-slate-200 pt-4">
               Proposta gerada automaticamente. Valores sujeitos a alteração caso o escopo seja modificado.
+            </div>
+          </div>
+
+          {/* Mobile Floating Bar */}
+          <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-700 p-3 flex items-center justify-between gap-3 lg:hidden z-50">
+            <div className="min-w-0">
+              <div className="text-[10px] text-slate-400 uppercase tracking-wider">Total</div>
+              <div className="text-xl font-bold text-white truncate">{formatCurrency(calculationDetails.finalTotal)}</div>
+              {installments > 1 && <div className="text-[10px] text-emerald-400">{installments}x de {formatCurrency(calculationDetails.installmentValue)}</div>}
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <button
+                onClick={handleCopyProposal}
+                className={`px-4 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+                  isCopied
+                    ? 'bg-green-600 text-white'
+                    : 'bg-purple-600 hover:bg-purple-500 text-white'
+                }`}
+              >
+                {isCopied ? '✓ Copiado' : '📋 Copiar'}
+              </button>
+              <button
+                onClick={handleExportPDF}
+                disabled={isExporting}
+                className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/30 transition-all"
+              >
+                {isExporting ? '...' : '📄 PDF'}
+              </button>
             </div>
           </div>
 
