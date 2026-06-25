@@ -4,7 +4,7 @@
 VICCS Pricing
 
 ## Description
-Ferramenta interna de precificação para a **Viccs Design**. Uma calculadora interativa de orçamentos com seleção de serviços (16 serviços em 6 categorias), suporte para dimensões de impressão personalizadas (metros, centímetros, milímetros), ajustes de complexidade/urgência, formas de pagamento variadas com cálculo automático de taxas e parcelas, campo de observações, inclusão de chave PIX nos orçamentos, persistência via localStorage, e exportação do orçamento completo em PDF.
+Ferramenta interna de precificação para a **Viccs Design**. Uma calculadora interativa de orçamentos com seleção de serviços (16 serviços em 6 categorias), suporte para dimensões de impressão personalizadas (metros, centímetros, milímetros), ajustes de complexidade/urgência, formas de pagamento simplificadas com cálculo automático de taxas e parcelas, campo de observações, sistema de desconto manual em reais, barra flutuante fixa para mobile, inclusão de chave PIX nos orçamentos, persistência via localStorage, e exportação do orçamento completo em PDF.
 
 ## Tech Stack
 - Languages: HTML5, JavaScript (ES6+, JSX)
@@ -51,7 +51,7 @@ viccs-pricing/
 │       └── supabase-postgres-best-practices/
 ├── base64_png.txt
 ├── base64_svg_white.txt
-├── index.html                  ← Aplicação inteira (~750 linhas)
+├── index.html                  ← Aplicação inteira (~780 linhas)
 ├── skills-lock.json
 └── update_index.js
 ```
@@ -71,7 +71,7 @@ Todo o código principal do cliente vive e executa no arquivo `index.html`. A ap
 | `BASE_SERVICES` | 16 serviços | id, name, desc?, basePrice, category, icon |
 | `COMPLEXITY_LEVELS` | 4 níveis | Multiplicadores de 0.9x a 1.6x |
 | `DEADLINE_LEVELS` | 4 níveis | Multiplicadores de 0.95x a 1.6x |
-| `PAYMENT_METHODS` | 6 métodos | PIX, Cartão (1x ou Parcelado com fee), Boleto, Permuta |
+| `PAYMENT_METHODS` | 4 métodos | PIX À Vista, PIX 50% + 50%, Cartão 1x (+4%), Cartão Parcelado (+6%) |
 | `CATEGORY_LABELS` | 7 categorias | Todos, Design, Social, Pacotes, Estampas, Impressão, Manutenção |
 | `REVISION_COST` | R$50 | Preço cobrado por cada revisão extra solicitada |
 
@@ -86,12 +86,13 @@ Todo o código principal do cliente vive e executa no arquivo `index.html`. A ap
 | `manutencao` | Manutenções de Menu Board (R$80/R$150/R$250), Atualização de Post (R$30), Adaptação de Formato (R$40) |
 
 ### Lógica de Cálculo
-```
+```text
 basePriceArea = basePrice × áreaCalculada (apenas para serviços de impressão)
 subtotal = base + complexityAdd + deadlineAdd + revisionsAdd
 grandTotal = subtotal + (subtotal × paymentFee)
-installmentValue = grandTotal / installments
-hourlyRate = grandTotal / estimatedHours
+finalTotal = grandTotal - min(discountBRL, grandTotal)
+installmentValue = finalTotal / installments
+hourlyRate = finalTotal / estimatedHours
 ```
 
 ## Features Implementadas
@@ -100,12 +101,14 @@ hourlyRate = grandTotal / estimatedHours
 - ✅ **Badge Visual nos Cards:** Facilita a identificação rápida da categoria do serviço.
 - ✅ **Cálculo de Área Avançado:** Permite calcular áreas de impressão por slider de m² ou inserção de valores exatos com seletores de unidade (metros, centímetros, milímetros).
 - ✅ **Ajustes de Complexidade, Urgência e Revisões:** Customização total do escopo com cálculo automático em tempo real.
-- ✅ **Formas de Pagamento Dinâmicas:** Suporte para 6 modalidades incluindo taxa de cartão parcelado (2x-12x) e permuta (com campo descritivo).
+- ✅ **Formas de Pagamento Simplificadas:** Reduzidas para 4 opções focadas (PIX À Vista, PIX 50/50, Cartão 1x e Cartão Parcelado), removendo Boleto e Permuta.
+- ✅ **Desconto Manual em Reais:** Input para aplicação de descontos na seção de Ajustes Finos, propagando-se em todo o aplicativo (cálculo de parcelas, métrica de hora, resumo, cópia de texto e PDF).
+- ✅ **Experiência Mobile Otimizada:** Barra flutuante inferior fixa em dispositivos móveis (< lg) exibindo valor total, parcelas e atalhos rápidos para Copiar Resumo e gerar PDF.
 - ✅ **Integração de PIX Automática:** Adiciona automaticamente os dados de Chave PIX (Aleatória) e Titular tanto no texto de cópia rápida para o cliente quanto na proposta exportada em PDF.
 - ✅ **Exportação Premium para PDF:** Utilização de `html2canvas` + `jsPDF` renderizando a logo original no documento através de um template estruturado e estilizado.
 - ✅ **Botão de Limpeza Completa (Reset):** Reinicia todos os estados da tela e limpa o `localStorage` com confirmação do usuário.
 - ✅ **Favicons Universais:** Suporte a ícones de compatibilidade para múltiplos dispositivos salvos na pasta de mídias.
-- ✅ **Estética Dark Mode Premium:** UI moderna com degradês, glassmorphism, sombras neon e foco nos contrastes e áreas de clique (Grandma Test aprovado).
+- ✅ **Estética Dark Mode Premium:** UI moderna com degradês, glassmorphism, sombras neon e foco nos contrastes e áreas de clique.
 
 ## Known TODOs / Próximos Passos
 - ⚠️ CDNs sem versão travada (possível quebra futura caso as CDNs sofram alterações).
@@ -113,4 +116,4 @@ hourlyRate = grandTotal / estimatedHours
 - ⚠️ Sem mecanismo de autenticação (acesso aberto local).
 
 ---
-*Última atualização: 2026-06-04*
+*Última atualização: 2026-06-25*

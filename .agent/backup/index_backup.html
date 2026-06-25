@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VICCS Pricing</title>
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href=".agent/media/favicon/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href=".agent/media/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href=".agent/media/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href=".agent/media/favicon/apple-touch-icon.png">
+  <link rel="manifest" href=".agent/media/favicon/site.webmanifest">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- html2canvas & jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+
+  <!-- Babel (Para transpilar o JSX no navegador) -->
+  <script src="https://unpkg.com/@babel/standalone@7.26.2/babel.min.js"></script>
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+  </style>
+</head>
+
+<body class="bg-slate-950 text-slate-200 antialiased selection:bg-purple-500/30">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+
+    const BASE_SERVICES = [
+      { id: 'id_visual', name: 'Identidade Visual Completa', basePrice: 650, category: 'design', icon: '🎨' },
+      { id: 'logo', name: 'Logotipo (Individual)', basePrice: 200, category: 'design', icon: '✨' },
+      { id: 'post_single', name: 'Post Instagram (Avulso)', basePrice: 50, category: 'social', icon: '📱' },
+      { id: 'pack_basic', name: 'Pacote Mensal Básico', desc: 'Até 10 posts', basePrice: 450, category: 'mensal', icon: '📦' },
+      { id: 'pack_inter', name: 'Pacote Mensal Intermediário', desc: '15 posts + 2 motions', basePrice: 700, category: 'mensal', icon: '🚀' },
+      { id: 'pack_adv', name: 'Pacote Mensal Avançado', desc: '20+ posts, motions, menus, etc.', basePrice: 1000, category: 'mensal', icon: '💎' },
+      { id: 'stamp_art', name: 'Arte para Estampa (Avulso)', basePrice: 80, category: 'print', icon: '👕' },
+      { id: 'stamp_pack', name: 'Pacote Estampas (5 artes)', desc: '5 artes para coleção', basePrice: 350, category: 'print', icon: '👕' },
+      { id: 'banner_m2', name: 'Banner / Lona (por m²)', desc: 'Preço por m²', basePrice: 120, category: 'impressao', icon: '🖼️' },
+      { id: 'faixa_m', name: 'Faixa (por metro linear)', desc: 'Preço por metro', basePrice: 90, category: 'impressao', icon: '📐' },
+      { id: 'impressao_plotagem', category: 'impressao', name: 'Plotagem', desc: 'Plotagem sob medida', basePrice: 100, icon: '🖨️' },
+      { id: 'menu_manut5', name: 'Manutenção Menu Board', desc: 'Até 5 alterações', basePrice: 80, category: 'manutencao', icon: '🍽️' },
+      { id: 'menu_manut15', name: 'Manutenção Menu Board', desc: 'Até 15 alterações', basePrice: 150, category: 'manutencao', icon: '🍽️' },
+      { id: 'menu_redesign', name: 'Redesign Parcial Menu Board', basePrice: 250, category: 'manutencao', icon: '🔄' },
+      { id: 'post_update', name: 'Atualização de Post Existente', desc: 'Data, info ou texto', basePrice: 30, category: 'manutencao', icon: '✏️' },
+      { id: 'format_adapt', name: 'Adaptação de Formato', desc: 'Peça existente → outro formato', basePrice: 40, category: 'manutencao', icon: '🔀' },
+    ];
+
+    const COMPLEXITY_LEVELS = [
+      { id: 'simples', name: 'Simples', multiplier: 0.9, desc: 'Layouts básicos, poucas variações' },
+      { id: 'normal', name: 'Normal', multiplier: 1.0, desc: 'Padrão do portfólio' },
+      { id: 'complexo', name: 'Complexo', multiplier: 1.3, desc: 'Muitos detalhes, ilustrações customizadas' },
+      { id: 'muito_complexo', name: 'Muito Complexo', multiplier: 1.6, desc: 'Exige pesquisa profunda, 3D ou assets difíceis' },
+    ];
+
+    const DEADLINE_LEVELS = [
+      { id: 'flexivel', name: 'Flexível', multiplier: 0.95, desc: 'Sem pressa (15+ dias)' },
+      { id: 'padrao', name: 'Padrão', multiplier: 1.0, desc: 'Prazo normal (7-14 dias)' },
+      { id: 'urgente', name: 'Urgente', multiplier: 1.3, desc: 'Prioridade (3-6 dias)' },
+      { id: 'rush', name: 'Para Ontem (Rush)', multiplier: 1.6, desc: 'Menos de 48h (Fura-fila)' },
+    ];
+
+    const PAYMENT_METHODS = [
+      { id: 'pix_avista', name: 'PIX / À Vista', fee: 0, icon: '⚡' },
+      { id: 'pix_50_50', name: 'PIX 50% + 50%', fee: 0, icon: '🤝' },
+      { id: 'cartao_1x', name: 'Cartão 1x', fee: 0.04, icon: '💳' },
+      { id: 'cartao_parcelado', name: 'Cartão Parcelado', fee: 0.06, icon: '💳' },
+    ];
+
+    const CATEGORY_LABELS = [
+      { id: 'all', name: 'Todos' },
+      { id: 'design', name: 'Design' },
+      { id: 'social', name: 'Social' },
+      { id: 'mensal', name: 'Pacotes' },
+      { id: 'print', name: 'Estampas' },
+      { id: 'impressao', name: 'Impressão' },
+      { id: 'manutencao', name: 'Manutenção' },
+    ];
+
+    const formatCurrency = (value) => {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(value);
+    };
+
+    function PricingApp() {
+      const PIX_KEY = "47c4bc69-8c00-4e7a-8e29-ecc639c33186";
+      const PIX_NAME = "Paulo Vinicios Oliveira da Silva";
+
+      const loadState = (key, fallback) => {
+        try { const v = localStorage.getItem('viccs_' + key); return v !== null ? JSON.parse(v) : fallback; }
+        catch { return fallback; }
+      };
+
+      const [selectedServiceId, setSelectedServiceId] = useState(() => loadState('serviceId', BASE_SERVICES[0].id));
+      const [complexity, setComplexity] = useState(() => loadState('complexity', 'normal'));
+      const [deadline, setDeadline] = useState(() => loadState('deadline', 'padrao'));
+      const [extraRevisions, setExtraRevisions] = useState(() => loadState('revisions', 0));
+      const [estimatedHours, setEstimatedHours] = useState(() => loadState('hours', 10));
+      const [paymentMethod, setPaymentMethod] = useState(() => loadState('payment', 'pix_avista'));
+      const [installments, setInstallments] = useState(() => loadState('installments', 1));
+      const [activeCategory, setActiveCategory] = useState('all');
+      const [dimensionM2, setDimensionM2] = useState(() => loadState('dimension', 1));
+      const [customWidth, setCustomWidth] = useState(() => loadState('customWidth', ''));
+      const [customHeight, setCustomHeight] = useState(() => loadState('customHeight', ''));
+      const [measurementUnit, setMeasurementUnit] = useState(() => loadState('unit', 'm'));
+      const [observacoes, setObservacoes] = useState(() => loadState('obs', ''));
+      const [isCopied, setIsCopied] = useState(false);
+      const [isExporting, setIsExporting] = useState(false);
+      const [discountBRL, setDiscountBRL] = useState(() => loadState('discount', 0));
+
+      const REVISION_COST = 50;
+
+      // Persistência localStorage
+      useEffect(() => {
+        const data = { serviceId: selectedServiceId, complexity, deadline, revisions: extraRevisions, hours: estimatedHours, payment: paymentMethod, installments, dimension: dimensionM2, customWidth, customHeight, obs: observacoes, unit: measurementUnit, discount: discountBRL };
+        Object.entries(data).forEach(([k, v]) => { try { localStorage.setItem('viccs_' + k, JSON.stringify(v)); } catch { } });
+      }, [selectedServiceId, complexity, deadline, extraRevisions, estimatedHours, paymentMethod, installments, dimensionM2, customWidth, customHeight, observacoes, measurementUnit, discountBRL]);
+
+      const selectedService = useMemo(() =>
+        BASE_SERVICES.find(s => s.id === selectedServiceId) || BASE_SERVICES[0]
+        , [selectedServiceId]);
+
+      const filteredServices = useMemo(() =>
+        activeCategory === 'all' ? BASE_SERVICES : BASE_SERVICES.filter(s => s.category === activeCategory)
+        , [activeCategory]);
+
+      const activeComplexity = useMemo(() =>
+        COMPLEXITY_LEVELS.find(c => c.id === complexity) || COMPLEXITY_LEVELS[1]
+        , [complexity]);
+
+      const activeDeadline = useMemo(() =>
+        DEADLINE_LEVELS.find(d => d.id === deadline) || DEADLINE_LEVELS[1]
+        , [deadline]);
+
+      const activePayment = useMemo(() =>
+        PAYMENT_METHODS.find(p => p.id === paymentMethod) || PAYMENT_METHODS[0]
+        , [paymentMethod]);
+
+      const isAreaBased = selectedService.category === 'impressao';
+
+      const effectiveArea = useMemo(() => {
+        if (customWidth && customHeight) {
+          const w = parseFloat(customWidth.toString().replace(',', '.'));
+          const h = parseFloat(customHeight.toString().replace(',', '.'));
+          if (!isNaN(w) && !isNaN(h) && w > 0 && h > 0) {
+            let widthInMeters = w;
+            let heightInMeters = h;
+            if (measurementUnit === 'cm') {
+              widthInMeters = w / 100;
+              heightInMeters = h / 100;
+            } else if (measurementUnit === 'mm') {
+              widthInMeters = w / 1000;
+              heightInMeters = h / 1000;
+            }
+            return widthInMeters * heightInMeters;
+          }
+        }
+        return dimensionM2;
+      }, [dimensionM2, customWidth, customHeight, measurementUnit]);
+
+      const calculationDetails = useMemo(() => {
+        let base = isAreaBased ? selectedService.basePrice * effectiveArea : selectedService.basePrice;
+        let complexityAdd = (base * activeComplexity.multiplier) - base;
+        let deadlineAdd = (base * activeDeadline.multiplier) - base;
+        let revisionsAdd = extraRevisions * REVISION_COST;
+        let subtotal = base + complexityAdd + deadlineAdd + revisionsAdd;
+        let paymentFee = subtotal * activePayment.fee;
+        let grandTotal = subtotal + paymentFee;
+        let discount = Math.min(Math.max(0, discountBRL), grandTotal);
+        let finalTotal = grandTotal - discount;
+        let installmentValue = installments > 1 ? finalTotal / installments : finalTotal;
+        let hourlyRate = estimatedHours > 0 ? finalTotal / estimatedHours : 0;
+
+        return { base, complexityAdd, deadlineAdd, revisionsAdd, subtotal, paymentFee, grandTotal, discount, finalTotal, installmentValue, hourlyRate };
+      }, [selectedService, activeComplexity, activeDeadline, extraRevisions, estimatedHours, activePayment, installments, effectiveArea, isAreaBased, discountBRL]);
+
+      const dimensionDisplay = useMemo(() => {
+        if (customWidth && customHeight) {
+          return `${customWidth}${measurementUnit} x ${customHeight}${measurementUnit} (Área: ${effectiveArea.toFixed(2)} m²)`;
+        }
+        return `${dimensionM2} m²`;
+      }, [dimensionM2, customWidth, customHeight, measurementUnit, effectiveArea]);
+
+      const handleCopyProposal = async () => {
+        const dimText = isAreaBased ? `\nDimensão: ${dimensionDisplay}` : '';
+        const obsText = observacoes.trim() ? `\nObservações: ${observacoes.trim()}` : '';
+        const parcText = installments > 1 ? ` — ${installments}x de ${formatCurrency(calculationDetails.installmentValue)}` : '';
+        const pixText = (activePayment.id.includes('pix')) ? `\n\nPagamento via PIX:\nChave: ${PIX_KEY}\nTitular: ${PIX_NAME}` : '';
+        const descText = calculationDetails.discount > 0 ? `\nDesconto: -${formatCurrency(calculationDetails.discount)}` : '';
+        const text = `Olá! Segue o orçamento para o projeto:
+
+Serviço: ${selectedService.name} ${selectedService.desc ? `(${selectedService.desc})` : ''}${dimText}
+Complexidade: ${activeComplexity.name}
+Prazo: ${activeDeadline.name}
+Revisões Extras: ${extraRevisions}
+Forma de Pagamento: ${activePayment.name}${parcText}${pixText}${obsText}${descText}
+
+Investimento Total: ${formatCurrency(calculationDetails.finalTotal)}
+
+*Valores sujeitos a alteração caso o escopo mude.*
+Qualquer dúvida, estou à disposição! 
+- Viccs Design (viccsdesign.vercel.app)`;
+
+        try {
+          await navigator.clipboard.writeText(text);
+          setIsCopied(true);
+          setTimeout(() => setIsCopied(false), 2000);
+        } catch {
+          const ta = document.createElement("textarea");
+          ta.value = text; document.body.appendChild(ta); ta.select();
+          try { document.execCommand('copy'); setIsCopied(true); setTimeout(() => setIsCopied(false), 2000); } catch (e) { console.error('Falha ao copiar', e); }
+          document.body.removeChild(ta);
+        }
+      };
+
+      const handleReset = () => {
+        if(confirm('Tem certeza que deseja limpar todos os campos?')) {
+            localStorage.clear();
+            setSelectedServiceId(BASE_SERVICES[0].id);
+            setComplexity('normal');
+            setDeadline('padrao');
+            setExtraRevisions(0);
+            setEstimatedHours(10);
+            setPaymentMethod('pix_avista');
+            setInstallments(1);
+            setActiveCategory('all');
+            setDimensionM2(1);
+            setCustomWidth('');
+            setCustomHeight('');
+            setMeasurementUnit('m');
+            setObservacoes('');
+            setDiscountBRL(0);
+        }
+      };
+
+      const handleExportPDF = async () => {
+        const element = document.getElementById('pdf-proposal');
+        if (!element) return;
+        
+        setIsExporting(true);
+        element.style.display = 'block';
+        
+        try {
+          const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
+          const imgData = canvas.toDataURL('image/png');
+          
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
+          
+          // Dimensões da imagem na escala do PDF
+          const imgWidth = pageWidth;
+          const imgTotalHeight = (canvas.height * imgWidth) / canvas.width;
+          
+          if (imgTotalHeight <= pageHeight) {
+            // Cabe em 1 página — renderiza direto
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgTotalHeight);
+          } else {
+            // Multi-page com técnica de OFFSET contínuo:
+            // A imagem inteira é posicionada em cada página com um deslocamento vertical.
+            // O jsPDF automaticamente corta (clip) o que sai dos limites da página.
+            // Resultado: conteúdo flui continuamente, sem lacunas brancas entre páginas.
+            const totalPages = Math.ceil(imgTotalHeight / pageHeight);
+            
+            for (let page = 0; page < totalPages; page++) {
+              if (page > 0) {
+                pdf.addPage();
+              }
+              
+              // Desloca a imagem para cima em cada página subsequente
+              // Página 0: y = 0 (mostra o topo)
+              // Página 1: y = -pageHeight (mostra a 2ª porção)
+              // Página N: y = -(N * pageHeight) (mostra a N+1ª porção)
+              const yOffset = -(page * pageHeight);
+              
+              pdf.addImage(imgData, 'PNG', 0, yOffset, imgWidth, imgTotalHeight);
+            }
+          }
+          
+          pdf.save(`Proposta_${selectedService.name.replace(/\s+/g, '_')}.pdf`);
+        } catch (err) {
+          console.error("Erro ao gerar PDF:", err);
+          alert("Ocorreu um erro ao gerar o PDF.");
+        } finally {
+          element.style.display = 'none';
+          setIsExporting(false);
+        }
+      };
+
+      return (
+        <div className="min-h-screen p-4 md:p-8 pb-28 lg:pb-8">
+          <div className="max-w-6xl mx-auto space-y-8">
+
+            <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-slate-800">
+              <div>
+              <div 
+                onContextMenu={(e) => e.preventDefault()} 
+                className="flex items-center select-none"
+              >
+                <img 
+                  src=".agent/media/svg/viccs_logo_white.svg" 
+                  alt="VICCS Logo" 
+                  className="h-8 object-contain pointer-events-none" 
+                  draggable={false} 
+                />
+              </div>
+                <p className="text-slate-400 mt-1 flex items-center gap-2 text-xs sm:text-base">
+                  <span className="hidden sm:inline">Calculadora de Projetos & Precificação Justa</span>
+                  <span className="sm:hidden">Calculadora & Precificação</span>
+                  <a href="https://viccsdesign.vercel.app/" target="_blank" rel="noreferrer" className="inline-flex items-center text-xs bg-slate-800 hover:bg-slate-700 px-2 py-1 rounded transition-colors text-purple-300">
+                    Acessar Portfólio ↗
+                  </a>
+                </p>
+              </div>
+              <div className="flex gap-3 w-full md:w-auto">
+                <button onClick={handleReset} className="flex-1 md:flex-none px-3 sm:px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-1 sm:gap-2 border border-slate-700">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
+                  Limpar
+                </button>
+                <button onClick={handleExportPDF} disabled={isExporting} className="flex-1 md:flex-none px-3 sm:px-4 py-2 bg-blue-600/20 hover:bg-blue-600/40 text-blue-400 border border-blue-500/30 text-xs sm:text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-1 sm:gap-2">
+                  {isExporting ? 'Gerando...' : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      Exportar PDF
+                    </>
+                  )}
+                </button>
+              </div>
+            </header>
+
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+              <div className="lg:col-span-8 space-y-8">
+
+                <section className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                  <h2 className="text-xl font-semibold mb-4 text-white flex items-center gap-2">
+                    <svg className="w-5 h-5 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+                    1. Serviço Base
+                  </h2>
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {CATEGORY_LABELS.map((cat) => (
+                      <button
+                        key={cat.id}
+                        onClick={() => setActiveCategory(cat.id)}
+                        className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${activeCategory === cat.id
+                          ? 'bg-purple-600 text-white shadow-md'
+                          : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
+                          }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                    {filteredServices.map((service) => (
+                      <button
+                        key={service.id}
+                        onClick={() => setSelectedServiceId(service.id)}
+                        className={`text-left p-4 rounded-xl transition-all border ${selectedServiceId === service.id
+                          ? 'bg-purple-900/20 border-purple-500 shadow-[0_0_15px_rgba(168,85,247,0.15)]'
+                          : 'bg-slate-800/50 border-slate-700 hover:border-slate-500 hover:bg-slate-800'
+                          }`}
+                      >
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-2xl">{service.icon}</span>
+                          <span className="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-700/60 text-slate-400">{service.category}</span>
+                        </div>
+                        <div className="font-medium text-slate-100">{service.name}</div>
+                        {service.desc && <div className="text-xs text-slate-400 mt-1">{service.desc}</div>}
+                        <div className="mt-3 font-semibold text-purple-400">
+                          {formatCurrency(service.basePrice)}{service.category === 'impressao' ? '/m²' : ''}
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                  {isAreaBased && (
+                    <div className="mt-4 p-4 bg-slate-800/50 rounded-xl border border-cyan-500/30 space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-cyan-300 mb-2 flex justify-between">
+                          <span>📐 Dimensão por Slider (m²)</span>
+                          <span className="text-cyan-400 font-semibold">{dimensionM2} m²</span>
+                        </label>
+                        <input
+                          type="range" min="1" max="50" step="0.5" value={dimensionM2}
+                          onChange={(e) => {
+                            setDimensionM2(parseFloat(e.target.value));
+                            setCustomWidth('');
+                            setCustomHeight('');
+                          }}
+                          className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-cyan-500"
+                        />
+                      </div>
+                      
+                      <div className="pt-3 border-t border-slate-700">
+                        <label className="block text-sm font-medium text-cyan-300 mb-2 flex justify-between items-center">
+                          <span>Ou insira a medida exata:</span>
+                          <select 
+                            value={measurementUnit}
+                            onChange={(e) => setMeasurementUnit(e.target.value)}
+                            className="bg-slate-800 border border-slate-600 rounded-lg p-1 text-xs text-slate-200 outline-none cursor-pointer"
+                          >
+                            <option value="m">Metros (m)</option>
+                            <option value="cm">Centímetros (cm)</option>
+                            <option value="mm">Milímetros (mm)</option>
+                          </select>
+                        </label>
+                        <div className="flex gap-4">
+                          <div className="flex-1">
+                            <label className="text-xs text-slate-400">Largura ({measurementUnit})</label>
+                            <input 
+                              type="number" step="0.01" min="0" placeholder={`Ex: ${measurementUnit === 'm' ? '1.5' : measurementUnit === 'cm' ? '150' : '1500'}`}
+                              value={customWidth}
+                              onChange={(e) => setCustomWidth(e.target.value)}
+                              className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-slate-200 mt-1 focus:border-cyan-500 outline-none"
+                            />
+                          </div>
+                          <div className="flex items-center pt-5 text-slate-500">x</div>
+                          <div className="flex-1">
+                            <label className="text-xs text-slate-400">Altura ({measurementUnit})</label>
+                            <input 
+                              type="number" step="0.01" min="0" placeholder={`Ex: ${measurementUnit === 'm' ? '2.0' : measurementUnit === 'cm' ? '200' : '2000'}`}
+                              value={customHeight}
+                              onChange={(e) => setCustomHeight(e.target.value)}
+                              className="w-full bg-slate-900 border border-slate-600 rounded-lg p-2 text-sm text-slate-200 mt-1 focus:border-cyan-500 outline-none"
+                            />
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="text-xs text-slate-400 mt-2 bg-slate-900/50 p-2 rounded-lg">
+                        Base: {formatCurrency(selectedService.basePrice)}/m² × <strong className="text-cyan-400">{effectiveArea.toFixed(2)} m²</strong> = <strong className="text-white">{formatCurrency(calculationDetails.base)}</strong>
+                      </div>
+                    </div>
+                  )}
+                </section>
+
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <section className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                    <h2 className="text-xl font-semibold mb-4 text-white">2. Nível de Complexidade</h2>
+                    <div className="space-y-3">
+                      {COMPLEXITY_LEVELS.map((lvl) => (
+                        <label key={lvl.id} className={`flex items-start gap-3 p-3 rounded-lg border cursor-pointer transition-colors ${complexity === lvl.id ? 'bg-blue-900/20 border-blue-500' : 'bg-slate-800/30 border-slate-700 hover:bg-slate-800'}`}>
+                          <input
+                            type="radio"
+                            name="complexity"
+                            value={lvl.id}
+                            checked={complexity === lvl.id}
+                            onChange={(e) => setComplexity(e.target.value)}
+                            className="mt-1 w-4 h-4 text-blue-500 bg-slate-900 border-slate-600 focus:ring-blue-500"
+                          />
+                          <div>
+                            <div className="font-medium text-slate-200">{lvl.name}</div>
+                            <div className="text-xs text-slate-400">{lvl.desc}</div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                  </section>
+
+                  <section className="space-y-8">
+                    <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                      <h2 className="text-xl font-semibold mb-4 text-white">3. Prazo / Urgência</h2>
+                      <div className="space-y-3">
+                        {DEADLINE_LEVELS.map((lvl) => (
+                          <label key={lvl.id} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${deadline === lvl.id ? 'bg-orange-900/20 border-orange-500' : 'bg-slate-800/30 border-slate-700 hover:bg-slate-800'}`}>
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="radio"
+                                name="deadline"
+                                value={lvl.id}
+                                checked={deadline === lvl.id}
+                                onChange={(e) => setDeadline(e.target.value)}
+                                className="w-4 h-4 text-orange-500 bg-slate-900 border-slate-600 focus:ring-orange-500"
+                              />
+                              <div>
+                                <div className="font-medium text-slate-200">{lvl.name}</div>
+                                <div className="text-xs text-slate-400">{lvl.desc}</div>
+                              </div>
+                            </div>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                      <h2 className="text-xl font-semibold mb-4 text-white">4. Ajustes Finos</h2>
+                      <div className="mb-6">
+                        <label className="block text-sm font-medium text-slate-300 mb-2">
+                          Revisões Extras (Além das inclusas)
+                        </label>
+                        <div className="flex items-center gap-4">
+                          <button onClick={() => setExtraRevisions(Math.max(0, extraRevisions - 1))} className="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xl font-bold">-</button>
+                          <span className="text-xl font-semibold w-8 text-center">{extraRevisions}</span>
+                          <button onClick={() => setExtraRevisions(extraRevisions + 1)} className="w-10 h-10 rounded-lg bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-xl font-bold">+</button>
+                          <span className="text-sm text-slate-400 ml-2">(+ {formatCurrency(REVISION_COST)} cada)</span>
+                        </div>
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-300 mb-2 flex justify-between">
+                          <span>Estimativa de Horas (p/ métrica)</span>
+                          <span className="text-purple-400 font-semibold">{estimatedHours}h</span>
+                        </label>
+                        <input
+                          type="range"
+                          min="1"
+                          max="80"
+                          value={estimatedHours}
+                          onChange={(e) => setEstimatedHours(parseInt(e.target.value))}
+                          className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-purple-500"
+                        />
+                      </div>
+                      <div className="mt-6">
+                        <label className="block text-sm font-medium text-slate-300 mb-2 flex justify-between">
+                          <span>💰 Desconto (R$)</span>
+                          {discountBRL > 0 && <span className="text-green-400 font-semibold">-{formatCurrency(discountBRL)}</span>}
+                        </label>
+                        <input
+                          type="number" step="1" min="0" placeholder="Ex: 50"
+                          value={discountBRL || ''}
+                          onChange={(e) => setDiscountBRL(Math.max(0, parseFloat(e.target.value) || 0))}
+                          className="w-full bg-slate-800 border border-slate-600 rounded-lg p-2 text-sm text-slate-200 placeholder-slate-500 focus:border-green-500 focus:ring-1 focus:ring-green-500 outline-none"
+                        />
+                        <p className="text-xs text-slate-500 mt-1">Desconto manual aplicado sobre o valor total.</p>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  <section className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                    <h2 className="text-xl font-semibold mb-4 text-white">5. Forma de Pagamento</h2>
+                    <div className="space-y-3">
+                      {PAYMENT_METHODS.map((pm) => (
+                        <label key={pm.id} className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-colors ${paymentMethod === pm.id ? 'bg-emerald-900/20 border-emerald-500' : 'bg-slate-800/30 border-slate-700 hover:bg-slate-800'}`}>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="radio" name="payment" value={pm.id}
+                              checked={paymentMethod === pm.id}
+                              onChange={(e) => { setPaymentMethod(e.target.value); if (e.target.value !== 'cartao_parcelado') setInstallments(1); }}
+                              className="w-4 h-4 text-emerald-500 bg-slate-900 border-slate-600 focus:ring-emerald-500"
+                            />
+                            <div>
+                              <div className="font-medium text-slate-200">{pm.icon} {pm.name}</div>
+                              {pm.fee > 0 && <div className="text-xs text-red-400">+{(pm.fee * 100).toFixed(0)}% taxa</div>}
+                            </div>
+                          </div>
+                        </label>
+                      ))}
+                    </div>
+                    {paymentMethod === 'cartao_parcelado' && (
+                      <div className="mt-4 p-3 bg-slate-800/50 rounded-xl border border-emerald-500/30">
+                        <label className="block text-sm font-medium text-emerald-300 mb-2 flex justify-between">
+                          <span>Parcelas</span>
+                          <span className="text-emerald-400 font-semibold">{installments}x de {formatCurrency(calculationDetails.installmentValue)}</span>
+                        </label>
+                        <input type="range" min="2" max="12" value={installments}
+                          onChange={(e) => setInstallments(parseInt(e.target.value))}
+                          className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500"
+                        />
+                      </div>
+                    )}
+
+                  </section>
+
+                  <section className="bg-slate-900 rounded-2xl p-6 border border-slate-800 shadow-xl">
+                    <h2 className="text-xl font-semibold mb-4 text-white">6. Observações</h2>
+                    <textarea
+                      placeholder="Anotações internas ou detalhes para o cliente..."
+                      value={observacoes}
+                      onChange={(e) => setObservacoes(e.target.value)}
+                      className="w-full h-32 bg-slate-800 border border-slate-600 rounded-lg p-3 text-sm text-slate-200 placeholder-slate-500 focus:border-purple-500 focus:ring-1 focus:ring-purple-500 outline-none resize-none"
+                    />
+                    <p className="text-xs text-slate-500 mt-2">Aparece na proposta copiada, se preenchido.</p>
+                  </section>
+                </div>
+
+              </div>
+
+
+              <div className="lg:col-span-4">
+                <div className="sticky top-8 bg-gradient-to-b from-slate-900 to-slate-950 rounded-3xl p-6 border border-slate-800 shadow-2xl relative overflow-hidden">
+                  <div className="absolute top-0 right-0 -mr-16 -mt-16 w-32 h-32 bg-purple-500/20 blur-3xl rounded-full"></div>
+                  <div className="absolute bottom-0 left-0 -ml-16 -mb-16 w-32 h-32 bg-blue-500/20 blur-3xl rounded-full"></div>
+
+                  <h2 className="text-lg font-medium text-slate-300 mb-6 uppercase tracking-wider text-center">Resumo do Orçamento</h2>
+
+                  <div className="space-y-4 mb-8 relative z-10">
+                    <div className="flex justify-between items-end border-b border-slate-800 pb-2">
+                      <div>
+                        <div className="text-sm text-slate-400">Serviço Base</div>
+                        <div className="font-medium text-slate-200 truncate max-w-[180px]" title={selectedService.name}>
+                          {selectedService.name}
+                        </div>
+                      </div>
+                      <div className="font-semibold text-white">{formatCurrency(calculationDetails.base)}</div>
+                    </div>
+
+                    {calculationDetails.complexityAdd !== 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="text-slate-400">Complexidade ({activeComplexity.name})</div>
+                        <div className={calculationDetails.complexityAdd > 0 ? "text-red-400" : "text-green-400"}>
+                          {calculationDetails.complexityAdd > 0 ? '+' : ''}{formatCurrency(calculationDetails.complexityAdd)}
+                        </div>
+                      </div>
+                    )}
+
+                    {calculationDetails.deadlineAdd !== 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="text-slate-400">Prazo ({activeDeadline.name})</div>
+                        <div className={calculationDetails.deadlineAdd > 0 ? "text-red-400" : "text-green-400"}>
+                          {calculationDetails.deadlineAdd > 0 ? '+' : ''}{formatCurrency(calculationDetails.deadlineAdd)}
+                        </div>
+                      </div>
+                    )}
+
+                    {extraRevisions > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="text-slate-400">{extraRevisions}x Revisões Extras</div>
+                        <div className="text-slate-300">
+                          +{formatCurrency(calculationDetails.revisionsAdd)}
+                        </div>
+                      </div>
+                    )}
+
+                    {calculationDetails.paymentFee > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="text-slate-400">Taxa ({activePayment.name})</div>
+                        <div className="text-red-400">+{formatCurrency(calculationDetails.paymentFee)}</div>
+                      </div>
+                    )}
+
+                    {isAreaBased && (
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="text-cyan-400">📐 {dimensionDisplay}</div>
+                        <div className="text-slate-400 text-xs">incluso no base</div>
+                      </div>
+                    )}
+
+                    {calculationDetails.discount > 0 && (
+                      <div className="flex justify-between items-center text-sm">
+                        <div className="text-slate-400">Desconto</div>
+                        <div className="text-green-400">-{formatCurrency(calculationDetails.discount)}</div>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="bg-slate-950/50 rounded-2xl p-6 border border-purple-500/30 text-center relative z-10 shadow-inner">
+                    <div className="text-sm text-purple-300 mb-1 font-medium">Preço Final Sugerido</div>
+                    <div className="text-2xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+                      {formatCurrency(calculationDetails.finalTotal)}
+                    </div>
+
+                    {installments > 1 && (
+                      <div className="mt-2 text-sm text-emerald-400 font-medium">
+                        {installments}x de {formatCurrency(calculationDetails.installmentValue)}
+                      </div>
+                    )}
+
+                    <div className="mt-4 pt-4 border-t border-slate-800/50 flex justify-center items-center gap-2">
+                      <div className="text-xs text-slate-400">Métrica:</div>
+                      <div className={`text-sm font-semibold px-2 py-1 rounded ${calculationDetails.hourlyRate > 40 ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
+                        {formatCurrency(calculationDetails.hourlyRate)} / hora
+                      </div>
+                    </div>
+
+                    <div className="mt-2 text-xs text-slate-500">{activePayment.icon} {activePayment.name}</div>
+                  </div>
+
+                  <button
+                    onClick={handleCopyProposal}
+                    className={`mt-6 w-full py-4 rounded-xl font-semibold flex items-center justify-center gap-2 transition-all relative z-10 ${isCopied
+                      ? 'bg-green-600 hover:bg-green-500 text-white shadow-[0_0_20px_rgba(22,163,74,0.4)]'
+                      : 'bg-purple-600 hover:bg-purple-500 text-white shadow-[0_0_20px_rgba(147,51,234,0.3)] hover:shadow-[0_0_25px_rgba(147,51,234,0.5)] transform hover:-translate-y-1'
+                      }`}
+                  >
+                    {isCopied ? (
+                      <>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
+                        Proposta Copiada!
+                      </>
+                    ) : (
+                      <>
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                        Copiar Resumo p/ Cliente
+                      </>
+                    )}
+                  </button>
+                  <p className="text-xs text-slate-500 text-center mt-4 relative z-10">
+                    Ferramenta interna. Ajuste se necessário.
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          {/* Hidden PDF Template */}
+          <div id="pdf-proposal" className="bg-white text-slate-800 p-10 w-[800px] hidden absolute top-0 left-0 z-[-1]" style={{ width: '800px', margin: '0 auto', background: 'white' }}>
+            {/* Cabecalho PDF */}
+            <div className="flex justify-between items-start border-b-2 border-slate-200 pb-6 mb-8">
+              <div>
+                <img src="data:image/png;base64,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" alt="VICCS Logo" width="136" height="60" style={{ marginBottom: '16px' }} />
+                <h1 className="text-2xl font-bold text-slate-900">PROPOSTA COMERCIAL</h1>
+                <p className="text-slate-500">Data: {new Date().toLocaleDateString('pt-BR')}</p>
+              </div>
+              <div className="text-right">
+                <div className="text-purple-600 font-semibold text-xl">VICCS Design</div>
+                <div className="text-slate-500 text-sm">viccsdesign.vercel.app</div>
+              </div>
+            </div>
+
+            <div className="space-y-6">
+              <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                <h2 className="text-lg font-semibold text-purple-600 mb-4 border-b border-slate-200 pb-2">Detalhes do Projeto</h2>
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div><span className="text-slate-500 block">Serviço</span> <span className="font-medium text-slate-900">{selectedService.name}</span></div>
+                  <div><span className="text-slate-500 block">Complexidade</span> <span className="font-medium text-slate-900">{activeComplexity.name}</span></div>
+                  <div><span className="text-slate-500 block">Prazo</span> <span className="font-medium text-slate-900">{activeDeadline.name}</span></div>
+                  {isAreaBased && <div><span className="text-slate-500 block">Dimensão</span> <span className="font-medium text-slate-900">{dimensionDisplay}</span></div>}
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                <h2 className="text-lg font-semibold text-blue-600 mb-4 border-b border-slate-200 pb-2">Valores e Investimento</h2>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between"><span className="text-slate-600">Valor Base</span> <span className="text-slate-900 font-medium">{formatCurrency(calculationDetails.base)}</span></div>
+                  {calculationDetails.complexityAdd !== 0 && <div className="flex justify-between"><span className="text-slate-600">Adicional de Complexidade</span> <span className="text-slate-900 font-medium">{calculationDetails.complexityAdd > 0 ? '+' : ''}{formatCurrency(calculationDetails.complexityAdd)}</span></div>}
+                  {calculationDetails.deadlineAdd !== 0 && <div className="flex justify-between"><span className="text-slate-600">Adicional de Prazo</span> <span className="text-slate-900 font-medium">{calculationDetails.deadlineAdd > 0 ? '+' : ''}{formatCurrency(calculationDetails.deadlineAdd)}</span></div>}
+                  {extraRevisions > 0 && <div className="flex justify-between"><span className="text-slate-600">Revisões Extras ({extraRevisions}x)</span> <span className="text-slate-900 font-medium">+{formatCurrency(calculationDetails.revisionsAdd)}</span></div>}
+                  {calculationDetails.paymentFee > 0 && <div className="flex justify-between"><span className="text-slate-600">Taxa de Pagamento</span> <span className="text-slate-900 font-medium">+{formatCurrency(calculationDetails.paymentFee)}</span></div>}
+                  {calculationDetails.discount > 0 && <div className="flex justify-between"><span className="text-slate-600">Desconto</span> <span className="text-green-600 font-medium">-{formatCurrency(calculationDetails.discount)}</span></div>}
+                  
+                  <div className="flex justify-between items-center pt-4 mt-2 border-t border-slate-200">
+                    <span className="text-base font-semibold text-slate-900">Investimento Total</span> 
+                    <span className="text-2xl font-bold text-purple-600">{formatCurrency(calculationDetails.finalTotal)}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                <h2 className="text-lg font-semibold text-emerald-600 mb-4 border-b border-slate-200 pb-2">Condições de Pagamento</h2>
+                <div className="text-sm space-y-2">
+                  <div><span className="text-slate-500 block">Forma Escolhida</span> <span className="font-medium text-slate-900">{activePayment.name} {installments > 1 ? `(${installments}x de ${formatCurrency(calculationDetails.installmentValue)})` : ''}</span></div>
+                  
+                  {activePayment.id.includes('pix') && (
+                    <div className="mt-4 p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                      <div className="text-emerald-700 font-semibold mb-1">Dados para PIX</div>
+                      <div className="text-slate-700">Chave: <span className="font-mono bg-white px-2 py-1 rounded border border-emerald-100">{PIX_KEY}</span></div>
+                      <div className="text-slate-700 mt-1">Titular: {PIX_NAME}</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {observacoes.trim() && (
+                <div className="bg-slate-50 p-6 rounded-xl border border-slate-200">
+                  <h2 className="text-lg font-semibold text-slate-700 mb-2 border-b border-slate-200 pb-2">Observações</h2>
+                  <p className="text-sm text-slate-600 whitespace-pre-wrap">{observacoes}</p>
+                </div>
+              )}
+            </div>
+            
+            <div className="mt-12 text-center text-xs text-slate-500 border-t border-slate-200 pt-4">
+              Proposta gerada automaticamente. Valores sujeitos a alteração caso o escopo seja modificado.
+            </div>
+          </div>
+
+          {/* Mobile Floating Bar */}
+          <div className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-md border-t border-slate-700 p-3 flex items-center justify-between gap-3 lg:hidden z-50">
+            <div className="min-w-0">
+              <div className="text-[10px] text-slate-400 uppercase tracking-wider">Total</div>
+              <div className="text-xl font-bold text-white truncate">{formatCurrency(calculationDetails.finalTotal)}</div>
+              {installments > 1 && <div className="text-[10px] text-emerald-400">{installments}x de {formatCurrency(calculationDetails.installmentValue)}</div>}
+            </div>
+            <div className="flex gap-2 flex-shrink-0">
+              <button
+                onClick={handleCopyProposal}
+                className={`px-4 py-2.5 rounded-lg text-xs font-semibold transition-all ${
+                  isCopied
+                    ? 'bg-green-600 text-white'
+                    : 'bg-purple-600 hover:bg-purple-500 text-white'
+                }`}
+              >
+                {isCopied ? '✓ Copiado' : '📋 Copiar'}
+              </button>
+              <button
+                onClick={handleExportPDF}
+                disabled={isExporting}
+                className="px-4 py-2.5 rounded-lg text-xs font-semibold bg-blue-600/30 hover:bg-blue-600/50 text-blue-300 border border-blue-500/30 transition-all"
+              >
+                {isExporting ? '...' : '📄 PDF'}
+              </button>
+            </div>
+          </div>
+
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<PricingApp />);
+  </script>
+</body>
+
+</html>

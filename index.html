@@ -25,7 +25,7 @@
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
 
   <!-- Babel (Para transpilar o JSX no navegador) -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone@7.26.2/babel.min.js"></script>
 
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -258,16 +258,44 @@ Qualquer dúvida, estou à disposição!
         element.style.display = 'block';
         
         try {
-          const canvas = await html2canvas(element, { scale: 2 });
+          const canvas = await html2canvas(element, { scale: 2, useCORS: true, logging: false });
           const imgData = canvas.toDataURL('image/png');
           
           const { jsPDF } = window.jspdf;
           const pdf = new jsPDF('p', 'mm', 'a4');
           
-          const pdfWidth = pdf.internal.pageSize.getWidth();
-          const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+          const pageWidth = pdf.internal.pageSize.getWidth();
+          const pageHeight = pdf.internal.pageSize.getHeight();
           
-          pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+          // Dimensões da imagem na escala do PDF
+          const imgWidth = pageWidth;
+          const imgTotalHeight = (canvas.height * imgWidth) / canvas.width;
+          
+          if (imgTotalHeight <= pageHeight) {
+            // Cabe em 1 página — renderiza direto
+            pdf.addImage(imgData, 'PNG', 0, 0, imgWidth, imgTotalHeight);
+          } else {
+            // Multi-page com técnica de OFFSET contínuo:
+            // A imagem inteira é posicionada em cada página com um deslocamento vertical.
+            // O jsPDF automaticamente corta (clip) o que sai dos limites da página.
+            // Resultado: conteúdo flui continuamente, sem lacunas brancas entre páginas.
+            const totalPages = Math.ceil(imgTotalHeight / pageHeight);
+            
+            for (let page = 0; page < totalPages; page++) {
+              if (page > 0) {
+                pdf.addPage();
+              }
+              
+              // Desloca a imagem para cima em cada página subsequente
+              // Página 0: y = 0 (mostra o topo)
+              // Página 1: y = -pageHeight (mostra a 2ª porção)
+              // Página N: y = -(N * pageHeight) (mostra a N+1ª porção)
+              const yOffset = -(page * pageHeight);
+              
+              pdf.addImage(imgData, 'PNG', 0, yOffset, imgWidth, imgTotalHeight);
+            }
+          }
+          
           pdf.save(`Proposta_${selectedService.name.replace(/\s+/g, '_')}.pdf`);
         } catch (err) {
           console.error("Erro ao gerar PDF:", err);
