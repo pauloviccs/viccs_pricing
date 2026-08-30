@@ -1,58 +1,28 @@
 # Changelog
 
-## 2026-06-04 — Ajustes V2: Pagamento, Desconto e Responsividade
+## 2026-08-30 — VICCS Pricing Pro (Supabase Auth, Motion Engine, Multi-Cart & Liquid Glass)
 
-### Remoções
-- Removido Boleto (🧾) das formas de pagamento
-- Removido Permuta / Escambo (🔄) das formas de pagamento e bloco condicional de textarea
-- PAYMENT_METHODS reduzido de 6 para 4 opções
-
-### Novas Features
-- **Desconto Manual (R$):** Input numérico na seção "Ajustes Finos" que subtrai valor do total final
-  - Persistido no localStorage (`viccs_discount`)
-  - Integrado no cálculo (`calculationDetails.discount` + `finalTotal`)
-  - Aparece no Resumo lateral, texto de cópia (WhatsApp) e PDF exportado
-  - Validação: desconto não pode exceder o grandTotal
-- **Barra Flutuante Mobile:** Fixa no rodapé em telas < lg (1024px)
-  - Mostra preço final, parcelas (se aplicável), botão Copiar e botão PDF
-  - `backdrop-blur-md` com estética premium
-
-### Responsividade
-- Container principal: `pb-28 lg:pb-8` (espaço para barra flutuante)
-- Header: texto adaptivo (`hidden sm:inline` / `sm:hidden`)
-- Botões header: `text-xs sm:text-sm`, `px-3 sm:px-4`, `gap-1 sm:gap-2`
-- Preço final: `text-2xl sm:text-4xl md:text-5xl`
-
-### Melhorias Técnicas
-- `calculationDetails` retorna: `discount`, `finalTotal` (além do `grandTotal` preservado)
-- Fórmula: `finalTotal = grandTotal - min(discountBRL, grandTotal)`
-- Parcelas e hora/valor agora calculados sobre `finalTotal`
-
-## 2026-06-04 — Expansão Completa do Sistema de Precificação
-
-### Novos Serviços (9 adicionados)
-- Arte para Estampa (Avulso) — R$80, categoria 'print'
-- Pacote Estampas (5 artes) — R$350, categoria 'print'
-- Banner / Lona (por m²) — R$120/m², categoria 'impressao'
-- Faixa (por metro linear) — R$90/m², categoria 'impressao'
-- Manutenção Menu Board (até 5 alt.) — R$80, categoria 'manutencao'
-- Manutenção Menu Board (até 15 alt.) — R$150, categoria 'manutencao'
-- Redesign Parcial Menu Board — R$250, categoria 'manutencao'
-- Atualização de Post Existente — R$30, categoria 'manutencao'
-- Adaptação de Formato — R$40, categoria 'manutencao'
-
-### Novas Features
-- Filtro por categoria (tabs: Todos, Design, Social, Pacotes, Estampas, Impressão, Manutenção)
-- Badge de categoria nos cards de serviço
-- Sistema de formas de pagamento (PIX, Cartão 1x/Parcelado, Boleto, Permuta)
-- Taxas de pagamento no cálculo (+4% cartão 1x, +6% parcelado)
-- Slider de parcelas (2x–12x) condicional
-- Campo de dimensão m² para serviços de impressão
-- Campo de observações (texto livre)
-- Persistência completa via localStorage
-- Clipboard API moderna com fallback
-
-### Melhorias Técnicas
-- Migrado `document.execCommand('copy')` → `navigator.clipboard.writeText()` com fallback
-- `calculationDetails` agora retorna: base, complexityAdd, deadlineAdd, revisionsAdd, subtotal, paymentFee, grandTotal, installmentValue, hourlyRate
-- Proposta de cópia inclui forma de pagamento, dimensão e observações
+### Novas Features & Módulos
+- **Autenticação Supabase com Restrição Admin:**
+  - Login e Cadastro restritos a E-mail/Senha (sem provedores sociais invasivos).
+  - Tela de espera para usuários pendentes; liberação apenas quando `is_admin = true` no Supabase.
+  - Modo de visualização direta de Administrador para desenvolvimento local ágil.
+- **Engine Paramétrica de Motion Design:**
+  - Slider dinâmico de segundos (5s a 120s+) com precificação escalonada por segundo.
+  - Seletores de estilo & complexidade visual (*Tipografia Cinética / Stories*, *2D Vetorial / Médio*, *Ilustração Complexa / 3D*).
+  - Toggle de *Sound Design & Trilha Sonora* comercial (+R$ 120,00).
+- **Sistema de Carrinho Multi-Itens (Empilhamento de Serviços):**
+  - Permite adicionar múltiplos serviços e pacotes em um único orçamento.
+  - Controles de quantidade (+ / -) e remoção instantânea por item.
+  - Badge de contagem em tempo real no header.
+- **Ajustes Comerciais com Justificativa:**
+  - Inputs para Acréscimos (+R$) e Descontos (-R$) com justificativas textuais impressas na proposta em PDF e no WhatsApp.
+- **Design System Dark Liquid Glass & Vetores SVG:**
+  - Interface baseada nas referências visuais oficiais (Workly, SmartShort e Liquid Glass Card).
+  - Fundo escuro profundo `#070709` com painéis foscos `backdrop-blur-2xl bg-[rgba(16,16,24,0.70)]` e reflexos de luz superiores `border-t-white/18`.
+  - Remoção de emojis amadores, substituídos por ícones vetoriais SVG de traço fino (Lucide/Heroicons).
+- **Persistência no Supabase & Histórico de Propostas:**
+  - Gravação relacional nas tabelas `proposals` e `proposal_items`.
+  - Drawer lateral para busca e reabertura de orçamentos antigos no editor.
+- **Exportação Otimizada de PDF Multipágina:**
+  - Renderização contínua com quebra de página inteligente, tabela de escopo e dados PIX automáticos.
