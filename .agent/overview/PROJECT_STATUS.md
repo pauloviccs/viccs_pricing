@@ -1,48 +1,53 @@
 # Project Overview
 
 ## Project Name
-VICCS Pricing
+VICCS Pricing Pro
 
 ## Description
-Ferramenta interna de precificação da **Viccs Design**. Uma aplicação interativa single-page para cálculo e geração de orçamentos em tempo real. Possui catálogo com 16 serviços divididos em 6 categorias, suporte a cálculo de medidas personalizadas para impressão (m², cm, mm), multiplicadores de complexidade e prazo de entrega, taxas de formas de pagamento (PIX e Cartão), desconto manual em reais, observações personalizadas, persistência reativa no `localStorage`, barra flutuante otimizada para mobile e exportação profissional da proposta em PDF com paginação contínua e inclusão de dados para pagamento via PIX.
+Plataforma SaaS de engenharia e gestão de orçamentos comerciais da **Viccs Design**. A aplicação opera como um montador de propostas inteligente (estilo carrinho de compras modular), permitindo o empilhamento de múltiplos serviços (Motion Design, Identidade Visual, Gráfica & Papelaria, Web Development, Sistemas & Software SaaS/B2B, Social Media, Impressão de Grandes Formatos e Manutenção), precificação paramétrica em tempo real, ajustes comerciais com justificativa formal, autenticação restrita via Supabase Auth com validação de administrador, sincronização em banco de dados relacional (PostgreSQL/Supabase), histórico de propostas salvas com busca rápida e exportação contínua de PDF multipágina com chave PIX embutida.
+
+A interface segue rigorosamente a **Identidade Visual Oficial (IDV) da Viccs Design**, utilizando a paleta nobre Crimson & Wine (`#a32b2b`, `#5a1515`, `#262e2f`), superfícies Dark Liquid Glass, logotipo vetorial e layout totalmente responsivo para mobile (iOS/Android), tablets e desktop.
 
 ## Tech Stack
-- Languages: HTML5, JavaScript (ES6+, JSX)
+- Languages: HTML5, JavaScript (ES6+, JSX), SQL (PostgreSQL)
 - Frameworks: React 18 (via CDN), ReactDOM 18 (via CDN)
-- Tools: Babel Standalone v7 (via CDN), Tailwind CSS v3 (via CDN), html2canvas v1.4.1 (via CDN), jsPDF v2.5.1 (via CDN)
-- Services: localStorage (Web Storage API), Google Fonts (Inter)
+- Tools: Babel Standalone v7 (via CDN), Tailwind CSS v3 (via CDN), html2canvas v1.4.1 (via CDN), jsPDF v2.5.1 (via CDN), Supabase JS Client v2 (UMD via CDN)
+- Services: Supabase (Auth, PostgreSQL Database, Storage), localStorage (Cache/Fallback Offline), Google Fonts (Inter)
+- Brand Assets: Vetores oficiais em `.agent/assets/logo/` (`VICCS_Design_Icon_BWR.svg`, `VICCS_Design_Logo_txt.svg`)
 
 ## Folder Structure
 ```text
 viccs-pricing/
 ├── .agent/
+│   ├── assets/
+│   │   ├── brand_base64.json
+│   │   └── logo/
+│   │       ├── VICCS_ColorsLOGO.svg
+│   │       ├── VICCS_Design_3D_Icon_BWR.svg
+│   │       ├── VICCS_Design_Icon_BWR.svg
+│   │       ├── VICCS_Design_Icon_WR.svg
+│   │       ├── VICCS_Design_Isotipo.svg
+│   │       ├── VICCS_Design_Isotipo_WHITE.svg
+│   │       ├── VICCS_Design_Logo_txt.svg
+│   │       └── VICCS_Design_Logo_txt_WHITE.svg
 │   ├── backup/
 │   │   ├── index_backup.html
-│   │   └── update_index.js
+│   │   ├── index_backup_v2.html
+│   │   └── index_backup_v3.html
 │   ├── context/
 │   │   ├── architecture.md
 │   │   ├── database_schema.md
 │   │   ├── stack.md
+│   │   ├── supabase_fix.sql
 │   │   └── viccs-pricing-pro-context.md
 │   ├── guidelines/
 │   │   ├── code_style.md
 │   │   └── ui_ux.md
 │   ├── media/
 │   │   ├── favicon/
-│   │   │   ├── apple-touch-icon.png
-│   │   │   ├── favicon-16x16.png
-│   │   │   ├── favicon-32x32.png
-│   │   │   ├── favicon.ico
-│   │   │   └── site.webmanifest
 │   │   ├── pdf/
-│   │   │   ├── Proposta_Identidade_Visual_Completa (2).pdf
-│   │   │   └── Proposta_Identidade_Visual_Completa.pdf
 │   │   ├── png/
-│   │   │   └── 2x/
-│   │   │       └── viccs_logo_black@2x.png
 │   │   └── svg/
-│   │       ├── viccs_logo_black.svg
-│   │       └── viccs_logo_white.svg
 │   ├── memory/
 │   │   ├── active_task.md
 │   │   ├── changelog.md
@@ -54,64 +59,42 @@ viccs-pricing/
 │       ├── create_component_skill.md
 │       └── review_pr_skill.md
 ├── .agents/
-│   └── skills/
-│       ├── supabase/
-│       └── supabase-postgres-best-practices/
-├── base64_png.txt
-├── base64_svg_white.txt
+├── apply_brand_idv.js
 ├── index.html
+├── README.md
 ├── skills-lock.json
 └── update_index.js
 ```
 
 ## Arquitetura & Implementação
 
-### Single-File Application
-O núcleo da aplicação reside em `index.html`, executando React e JSX transpilados no cliente via Babel Standalone, eliminando necessidade de build steps complexos para uso direto no navegador.
+### 1. Sistema de Identidade Visual Oficial (Crimson & Wine IDV)
+- **Cores da Marca:**
+  - *Crimson Primário (`#a32b2b`):* Acento de destaque, botões de ação e sombras difusas `shadow-glow-crimson`.
+  - *Deep Wine (`#5a1515`):* Profundidade visual em gradientes e botões secundários.
+  - *Gunmetal Charcoal (`#262e2f`) & Titanium (`#2d3636`):* Superfícies metálicas e contrastes sóbrios.
+  - *Deep Obsidian (`#08090b`):* Fundo escuro imersivo.
+- **Logotipos Oficiais:**
+  - Ícone de topo e Login: `VICCS_Design_Icon_BWR.svg`.
+  - Proposta Comercial (PDF): `VICCS_Design_Logo_txt.svg` em alta definição para impressão A4.
+- **Sem Duplicações:** Tipografia e logos distribuídos cirurgicamente sem elementos repetidos.
 
-### Componente Central: `PricingApp`
-- **Gerenciamento de Estado:** Hooks `useState` associados a sincronização em tempo real com `localStorage` via `useEffect` (chaves prefixadas com `viccs_`).
-- **Pipeline de Cálculo Reativo (`useMemo`):**
-  1. `basePriceArea`: cálculo condicional para mídias de impressão com base na área computada.
-  2. `subtotal = base + complexityAdd + deadlineAdd + revisionsAdd`
-  3. `grandTotal = subtotal + (subtotal × paymentFee)`
-  4. `finalTotal = grandTotal - min(discountBRL, grandTotal)`
-  5. `installmentValue = finalTotal / installments`
-  6. `hourlyRate = finalTotal / estimatedHours`
+### 2. Responsividade Total & Otimização Mobile (iOS, Android, Tablet)
+- **Top Navbar:** Fixa com efeito glassmorphism e acesso rápido a Histórico e Carrinho.
+- **Barra Flutuante Mobile:** Em telas `< lg`, uma barra inferior fixa mantém o total e o botão de adicionar/visualizar sempre ao alcance do polegar.
+- **Mobile Cart Drawer:** Gaveta lateral fluida para gerenciar itens, alterar quantidades e exportar sem rolagem excessiva.
 
-### Tabelas de Domínio
-| Configuração | Total | Detalhes |
-|---|---|---|
-| `BASE_SERVICES` | 16 itens | `design`, `social`, `mensal`, `print`, `impressao`, `manutencao` |
-| `COMPLEXITY_LEVELS` | 4 níveis | Simples (0.9x), Normal (1.0x), Complexo (1.3x), Muito Complexo (1.6x) |
-| `DEADLINE_LEVELS` | 4 níveis | Flexível (0.95x), Padrão (1.0x), Urgente (1.3x), Rush 48h (1.6x) |
-| `PAYMENT_METHODS` | 4 opções | PIX À Vista (0%), PIX 50%+50% (0%), Cartão 1x (+4%), Cartão Parcelado (+6%) |
-| `CATEGORY_LABELS` | 7 filtros | Todos, Design, Social, Pacotes, Estampas, Impressão, Manutenção |
-| `REVISION_COST` | R$ 50,00 | Custo fixo unitário por rodada adicional de alteração |
+### 3. Autenticação & Permissões (Supabase Auth)
+- Login/Cadastro seguro com e-mail e senha, restrição de acesso até liberação por administrador (`is_admin = true`). Modo preview local para desenvolvimento ágil.
 
-## Features Implementadas
-- ✅ **Catálogo Completo de Serviços (16 itens):** Categorizados e segmentados com ícones e descrições.
-- ✅ **Filtro de Categoria em Tabs:** Navegação fluida entre os nichos de serviço.
-- ✅ **Badges Visuais nos Cards:** Identificação imediata da categoria do serviço.
-- ✅ **Calculadora de Impressão e Área:** Slider rápido de m² e entrada manual de medidas com conversão de unidades (m, cm, mm).
-- ✅ **Ajustes de Complexidade, Urgência e Revisões:** Customização de escopo e recalculo em tempo real.
-- ✅ **Formas de Pagamento Otimizadas:** Opções focadas com cálculo automatizado de taxas e número de parcelas configurável (2x a 12x).
-- ✅ **Desconto Manual em Reais:** Input na seção de Ajustes Finos que propaga o abatimento para todos os totais, parcelas, resumo e PDF.
-- ✅ **Barra Flutuante Fixa para Mobile:** Acesso rápido ao valor final, parcelamento, cópia de resumo e geração de PDF em telas menores.
-- ✅ **Automação de Dados PIX:** Inserção automática de chave e titular na proposta de texto (WhatsApp) e no PDF.
-- ✅ **Exportação em PDF com Offset Multipágina:** Geração visual da proposta via `html2canvas` e `jsPDF` sem quebra indesejada de blocos.
-- ✅ **Persistência Completa Local:** Restauração do último orçamento editado via `localStorage`.
-- ✅ **Botão de Limpeza / Reset Geral:** Limpa todos os campos e o cache local mediante confirmação.
-- ✅ **Identidade Visual e Dark Theme:** UI em tons escuros slate/roxo com glassmorphism e tipografia Inter.
+### 4. Motor de Precificação Polimórfica (34 serviços em 11 categorias)
+- Módulos específicos para Motion Design (segundos + estilos), Grandes Formatos (m²) e Standard (Gráfica, Web Development, Software SaaS B2B, Social Media, etc.). Piso mínimo de R$ 50,00 respeitado.
 
-## Estado Atual do Projeto & Work in Progress
-- **Status Operacional:** Estável e pronto para uso interno diário.
-- **Skills Locais Instaladas:** Plugins de Supabase adicionados em `.agents/skills/` para futura expansão de banco de dados e autenticação.
+### 5. Carrinho Multi-Itens & Exportação
+- Empilhamento de serviços, ajustes com justificativa, persistência local/Supabase e geração de PDF contínuo com dados PIX.
 
-## Known TODOs / Próximos Passos
-- ⚠️ **Versionamento e Build Local:** Avaliar migração futura para Vite/React com dependências npm travadas caso o escopo aumente.
-- ⚠️ **Histórico de Propostas:** Implementar persistência de múltiplos orçamentos salvos (histórico/CRUD).
-- ⚠️ **Camada de Backend / Cloud:** Integrar Supabase (banco e auth) para sincronização multi-dispositivo da equipe.
+## Estado Atual do Projeto
+- **Status Operacional:** Completo, testado, 100% responsivo e alinhado à IDV da Viccs Design.
 
 ---
-*Sincronizado em: 2026-08-30*
+*Sincronizado em: 2026-11-21*

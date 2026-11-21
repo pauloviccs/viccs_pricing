@@ -1,0 +1,1783 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VICCS Pricing Pro — Gestão & Engenharia de Propostas</title>
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/x-icon" href=".agent/media/favicon/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href=".agent/media/favicon/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href=".agent/media/favicon/favicon-16x16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href=".agent/media/favicon/apple-touch-icon.png">
+  <link rel="manifest" href=".agent/media/favicon/site.webmanifest">
+
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#faf5ff',
+              100: '#f3e8ff',
+              200: '#e9d5ff',
+              300: '#d8b4fe',
+              400: '#c084fc',
+              500: '#a855f7',
+              600: '#9333ea',
+              700: '#7e22ce',
+              800: '#6b21a8',
+              900: '#581c87',
+              950: '#3b0764',
+            },
+            surface: {
+              base: '#070709',
+              card: 'rgba(16, 16, 24, 0.72)',
+              cardHover: 'rgba(24, 24, 36, 0.85)',
+              border: 'rgba(255, 255, 255, 0.08)',
+              borderHighlight: 'rgba(255, 255, 255, 0.18)',
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          },
+          boxShadow: {
+            'glow-purple': '0 0 25px -3px rgba(168, 85, 247, 0.35)',
+            'glow-pink': '0 0 25px -3px rgba(244, 63, 94, 0.4)',
+            'glow-cyan': '0 0 25px -3px rgba(6, 182, 212, 0.35)',
+            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #070709;
+      color: #f1f5f9;
+      overflow-x: hidden;
+    }
+
+    /* Custom Glass Scrollbar */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #09090d;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #27273a;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #a855f7;
+    }
+
+    /* Liquid Glass Effects */
+    .liquid-glass {
+      background: rgba(16, 16, 24, 0.70);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-top: 1px solid rgba(255, 255, 255, 0.18);
+    }
+
+    .liquid-glass-input {
+      background: rgba(8, 8, 12, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      transition: all 0.2s ease;
+    }
+    .liquid-glass-input:focus {
+      border-color: rgba(168, 85, 247, 0.6);
+      box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+    }
+
+    @keyframes pulseGlow {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.04); opacity: 0.9; }
+    }
+    .animate-pulse-glow {
+      animation: pulseGlow 2.5s infinite ease-in-out;
+    }
+  </style>
+
+  <!-- Supabase JS Client (UMD bundle) -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+  <!-- html2canvas & jsPDF -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+
+  <!-- Babel Standalone -->
+  <script src="https://unpkg.com/@babel/standalone@7.26.2/babel.min.js"></script>
+</head>
+
+<body class="bg-[#070709] text-slate-100 min-h-screen selection:bg-purple-500/30">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    // --- SUPABASE CONFIGURATION ---
+    const SUPABASE_URL = "https://ocljycqlajgaidnokehy.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jbGp5Y3FsYWpnYWlkbm9rZWh5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1ODA3MDcsImV4cCI6MjA5NjE1NjcwN30.3JSLw_wenljn8gQ_nIIQK-lMK2y3Z6c-tBfIk_gKx0E";
+    
+    let supabaseClient = null;
+    try {
+      if (window.supabase && typeof window.supabase.createClient === 'function') {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      }
+    } catch (err) {
+      console.error("Erro ao inicializar Supabase:", err);
+    }
+
+    // --- ICON HELPER (SVG Vector System - No Amateur Emojis) ---
+    const Icon = ({ name, className = "w-5 h-5" }) => {
+      switch (name) {
+        case 'motion':
+        case 'video':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>;
+        case 'design':
+        case 'palette':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M7 21a4 4 0 01-4-4 5 5 0 015-5h1.5a1.5 1.5 0 001.5-1.5V9a5 5 0 015-5 4 4 0 014 4c0 3.5-3 5.5-5 5.5h-1a2 2 0 00-2 2v2a3 3 0 01-3 3z" /></svg>;
+        case 'social':
+        case 'smartphone':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>;
+        case 'mensal':
+        case 'package':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" /></svg>;
+        case 'print':
+        case 'shirt':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>;
+        case 'impressao':
+        case 'printer':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4H7v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" /></svg>;
+        case 'manutencao':
+        case 'wrench':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>;
+        case 'cart':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" /></svg>;
+        case 'history':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+        case 'copy':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>;
+        case 'pdf':
+        case 'download':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>;
+        case 'trash':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>;
+        case 'plus':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>;
+        case 'check':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>;
+        case 'arrow-right':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>;
+        case 'sound':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" /></svg>;
+        case 'shield':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>;
+        case 'logout':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>;
+        case 'close':
+        case 'x':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>;
+        case 'eye':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
+        case 'eye-off':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>;
+        case 'code':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>;
+        case 'terminal':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>;
+        case 'globe':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>;
+        default:
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>;
+      }
+    };
+
+    // --- DOMAIN CONSTANTS ---
+    const BASE_SERVICES = [
+      // Motion Design (Módulo Dinâmico)
+      { id: 'motion_custom', name: 'Motion Design Sob Medida', desc: 'Vídeos animados com controle de segundos e estilo', basePrice: 350, category: 'motion', iconName: 'motion', isMotion: true },
+      { id: 'motion_story', name: 'Motion Stories / Reels (15s)', desc: 'Animação para redes sociais', basePrice: 200, category: 'motion', iconName: 'motion', isMotion: true, defaultSec: 15 },
+      { id: 'motion_institucional', name: 'Vídeo Institucional / Comercial (30s-60s)', desc: 'Motion corporativo completo', basePrice: 650, category: 'motion', iconName: 'motion', isMotion: true, defaultSec: 45 },
+      
+      // Design & Identidade
+      { id: 'id_visual', name: 'Identidade Visual Completa', desc: 'Brandbook, logo, tipografia e aplicações', basePrice: 650, category: 'design', iconName: 'design' },
+      { id: 'logo', name: 'Logotipo Individual', desc: 'Símbolo principal e variações', basePrice: 200, category: 'design', iconName: 'design' },
+      
+      // Gráfica & Papelaria (Design / Criação da Arte)
+      { id: 'grafica_cartao_visita', name: 'Cartão de Visita (Arte)', desc: 'Design frente e verso pronto para gráfica com marcas de corte', basePrice: 80, category: 'grafica', iconName: 'print' },
+      { id: 'grafica_papel_timbrado', name: 'Papel Timbrado (Arte)', desc: 'Layout A4 institucional e versão editável em Word/Docs', basePrice: 120, category: 'grafica', iconName: 'design' },
+      { id: 'grafica_convite_casamento', name: 'Convite de Casamento Impresso (Arte)', desc: 'Layout nobre, monograma e manual dos noivos/padrinhos', basePrice: 250, category: 'grafica', iconName: 'design' },
+      { id: 'grafica_cardapio', name: 'Cardápio / Menu Impresso (Arte)', desc: 'Diagramação profissional de itens e preços para gráfica', basePrice: 180, category: 'grafica', iconName: 'design' },
+      { id: 'grafica_flyer', name: 'Flyer / Panfleto Promocional (Arte)', desc: 'Arte para distribuição rápida frente/verso para impressão', basePrice: 60, category: 'grafica', iconName: 'print' },
+
+      // Web Development
+      { id: 'web_convite_interativo', name: 'Convite de Casamento Interativo (Webapp)', desc: 'Página web animada com RSVP, contagem regressiva e mapa', basePrice: 500, category: 'webdev', iconName: 'code' },
+      { id: 'web_landing_page', name: 'Landing Page (One Page)', desc: 'Página de alta conversão, responsiva, com CTA e WhatsApp', basePrice: 1200, category: 'webdev', iconName: 'code' },
+      { id: 'web_site_institucional', name: 'Site Institucional (até 5 páginas)', desc: 'Home, Quem Somos, Serviços, Contato e blog básico com SEO', basePrice: 2500, category: 'webdev', iconName: 'code' },
+      { id: 'web_site_portfolio', name: 'Site Portfólio / Blog Especializado', desc: 'Galeria visual de trabalhos, categorização e área de artigos', basePrice: 1800, category: 'webdev', iconName: 'code' },
+      { id: 'web_ecommerce', name: 'E-commerce / Loja Virtual Completa', desc: 'Catálogo, carrinho, gateway de pagamento e frete integrado', basePrice: 5000, category: 'webdev', iconName: 'code' },
+
+      // Sistemas & Software (Software Development)
+      { id: 'soft_sistema_simples', name: 'Sistema Web Simples (Painel / CRUD)', desc: 'Painel administrativo com login, cadastro e relatórios básicos', basePrice: 3500, category: 'software', iconName: 'terminal' },
+      { id: 'soft_mvp_saas', name: 'MVP / Micro-SaaS', desc: 'Produto viável mínimo com autenticação, dashboard e cobrança recorrente', basePrice: 15000, category: 'software', iconName: 'terminal' },
+      { id: 'soft_saas_completo', name: 'SaaS Completo (B2B / B2C)', desc: 'Arquitetura multi-tenant, controle de permissões (RBAC) e integrações avançadas', basePrice: 50000, category: 'software', iconName: 'terminal' },
+      { id: 'soft_sistema_custom', name: 'Sistema Sob Medida (Enterprise)', desc: 'Desenvolvimento customizado com regras de negócio exclusivas e APIs dedicadas', basePrice: 25000, category: 'software', iconName: 'terminal' },
+      { id: 'soft_app_mobile', name: 'Aplicativo Mobile (React Native / Flutter)', desc: 'App nativo iOS/Android com backend, notificações push e stores', basePrice: 12000, category: 'software', iconName: 'smartphone' },
+
+      // Social Media
+      { id: 'post_single', name: 'Post Instagram (Avulso)', desc: 'Design estático para feed ou carrossel', basePrice: 50, category: 'social', iconName: 'social' },
+      
+      // Pacotes Mensais
+      { id: 'pack_basic', name: 'Pacote Mensal Básico', desc: 'Até 10 posts estáticos', basePrice: 450, category: 'mensal', iconName: 'mensal' },
+      { id: 'pack_inter', name: 'Pacote Mensal Intermediário', desc: '15 posts + 2 motions inclusos', basePrice: 700, category: 'mensal', iconName: 'mensal' },
+      { id: 'pack_adv', name: 'Pacote Mensal Avançado', desc: '20+ posts, motions, menus e suporte prioritário', basePrice: 1000, category: 'mensal', iconName: 'mensal' },
+      
+      // Estampas & Vestuário
+      { id: 'stamp_art', name: 'Arte para Estampa (Avulso)', desc: 'Design vetorizado pronto para serigrafia/DTF', basePrice: 80, category: 'print', iconName: 'print' },
+      { id: 'stamp_pack', name: 'Pacote Estampas (5 artes)', desc: 'Coleção completa de artes temáticas', basePrice: 350, category: 'print', iconName: 'print' },
+      
+      // Impressão em Grandes Formatos
+      { id: 'banner_m2', name: 'Banner / Lona (por m²)', desc: 'Cálculo por área total impressa', basePrice: 120, category: 'impressao', iconName: 'impressao', isArea: true },
+      { id: 'faixa_m', name: 'Faixa Promocional (por metro)', desc: 'Cálculo por metro linear', basePrice: 90, category: 'impressao', iconName: 'impressao', isArea: true },
+      { id: 'impressao_plotagem', name: 'Plotagem de Fachada / Veículo', desc: 'Medição sob medida', basePrice: 100, category: 'impressao', iconName: 'impressao', isArea: true },
+      
+      // Manutenção & Adaptação
+      { id: 'menu_manut5', name: 'Manutenção Menu Board (até 5 alt.)', desc: 'Ajuste de preços e itens', basePrice: 80, category: 'manutencao', iconName: 'manutencao' },
+      { id: 'menu_manut15', name: 'Manutenção Menu Board (até 15 alt.)', desc: 'Revisão ampla de cardápio', basePrice: 150, category: 'manutencao', iconName: 'manutencao' },
+      { id: 'menu_redesign', name: 'Redesign Parcial de Cardápio', desc: 'Nova diagramação e estilo', basePrice: 250, category: 'manutencao', iconName: 'manutencao' },
+      { id: 'post_update', name: 'Atualização de Post Existente', desc: 'Troca de data, valor ou texto', basePrice: 30, category: 'manutencao', iconName: 'manutencao' },
+      { id: 'format_adapt', name: 'Adaptação de Formato', desc: 'Feed → Stories / Banner → Cartaz', basePrice: 40, category: 'manutencao', iconName: 'manutencao' },
+    ];
+
+    const MOTION_STYLES = [
+      { id: 'kinetic', name: 'Tipografia Cinética / Stories', ratePerSec: 15, mult: 1.0, desc: 'Letras animadas, transições dinâmicas e fotos' },
+      { id: 'vector2d', name: '2D Vetorial / Motion Médio', ratePerSec: 22, mult: 1.4, desc: 'Ícones, formas geométricas, ilustrações vetoriais' },
+      { id: 'complex3d', name: 'Ilustração Complexa / 3D', ratePerSec: 35, mult: 2.0, desc: 'Modelagem 3D, personagens ou efeitos avançados' },
+    ];
+
+    const COMPLEXITY_LEVELS = [
+      { id: 'simples', name: 'Simples', multiplier: 0.9, desc: 'Direto ao ponto, layout enxuto' },
+      { id: 'normal', name: 'Normal', multiplier: 1.0, desc: 'Padrão do portfólio' },
+      { id: 'complexo', name: 'Complexo', multiplier: 1.3, desc: 'Muitos detalhes e customizações' },
+      { id: 'muito_complexo', name: 'Muito Complexo', multiplier: 1.6, desc: 'Pesquisa visual profunda e assets raros' },
+    ];
+
+    const DEADLINE_LEVELS = [
+      { id: 'flexivel', name: 'Flexível', multiplier: 0.95, desc: 'Sem pressa (15+ dias)' },
+      { id: 'padrao', name: 'Padrão', multiplier: 1.0, desc: 'Prazo normal (7-14 dias)' },
+      { id: 'urgente', name: 'Urgente', multiplier: 1.3, desc: 'Prioritário (3-6 dias)' },
+      { id: 'rush', name: 'Rush / 48h', multiplier: 1.6, desc: 'Fura-fila de emergência' },
+    ];
+
+    const PAYMENT_METHODS = [
+      { id: 'pix_avista', name: 'PIX / À Vista', fee: 0 },
+      { id: 'pix_50_50', name: 'PIX 50% + 50%', fee: 0 },
+      { id: 'cartao_1x', name: 'Cartão 1x (+4%)', fee: 0.04 },
+      { id: 'cartao_parcelado', name: 'Cartão Parcelado (+6%)', fee: 0.06 },
+    ];
+
+    const CATEGORIES = [
+      { id: 'all', name: 'Todos os Serviços', iconName: 'palette' },
+      { id: 'motion', name: 'Motion Design', iconName: 'motion' },
+      { id: 'design', name: 'Identidade & Design', iconName: 'design' },
+      { id: 'grafica', name: 'Gráfica', iconName: 'printer' },
+      { id: 'webdev', name: 'Web Development', iconName: 'code' },
+      { id: 'software', name: 'Sistemas & Software', iconName: 'terminal' },
+      { id: 'social', name: 'Social Media', iconName: 'social' },
+      { id: 'mensal', name: 'Pacotes Mensais', iconName: 'mensal' },
+      { id: 'print', name: 'Estampas', iconName: 'shirt' },
+      { id: 'impressao', name: 'Grandes Formatos', iconName: 'printer' },
+      { id: 'manutencao', name: 'Manutenções', iconName: 'wrench' },
+    ];
+
+    const formatCurrency = (val) => {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL',
+      }).format(val || 0);
+    };
+
+    // --- MAIN APP COMPONENT ---
+    function App() {
+      // --- AUTH STATE ---
+      const [user, setUser] = useState(null);
+      const [profile, setProfile] = useState(null);
+      const [authLoading, setAuthLoading] = useState(true);
+      const [authMode, setAuthMode] = useState('login'); // 'login' | 'signup'
+      const [authEmail, setAuthEmail] = useState('');
+      const [authPassword, setAuthPassword] = useState('');
+      const [showPassword, setShowPassword] = useState(false);
+      const [authError, setAuthError] = useState('');
+      const [authSuccess, setAuthSuccess] = useState('');
+
+      // --- APPLICATION DATA STATE ---
+      const [activeCategory, setActiveCategory] = useState('all');
+      const [selectedServiceId, setSelectedServiceId] = useState('motion_custom');
+      
+      // Parametric Item Config
+      const [motionSeconds, setMotionSeconds] = useState(30);
+      const [motionStyle, setMotionStyle] = useState('vector2d');
+      const [soundDesign, setSoundDesign] = useState(true);
+      
+      const [dimensionM2, setDimensionM2] = useState(1);
+      const [unitWidth, setUnitWidth] = useState(1);
+      const [unitHeight, setUnitHeight] = useState(1);
+      const [unitType, setUnitType] = useState('m');
+      const [inputMode, setInputMode] = useState('exact');
+      
+      const [complexity, setComplexity] = useState('normal');
+      const [deadline, setDeadline] = useState('padrao');
+      const [revisions, setRevisions] = useState(0);
+
+      // --- CART & PROPOSAL STATE ---
+      const [cart, setCart] = useState(() => {
+        try {
+          const saved = localStorage.getItem('viccs_pro_cart');
+          return saved ? JSON.parse(saved) : [];
+        } catch {
+          return [];
+        }
+      });
+      const [clientName, setClientName] = useState(() => localStorage.getItem('viccs_pro_client') || '');
+      const [clientContact, setClientContact] = useState(() => localStorage.getItem('viccs_pro_contact') || '');
+      const [observations, setObservations] = useState(() => localStorage.getItem('viccs_pro_obs') || '');
+      
+      // Commercial Adjustments
+      const [additionAmount, setAdditionAmount] = useState(0);
+      const [additionReason, setAdditionReason] = useState('');
+      const [discountAmount, setDiscountAmount] = useState(0);
+      const [discountReason, setDiscountReason] = useState('');
+      
+      // Payment Settings
+      const [paymentMethod, setPaymentMethod] = useState('pix_avista');
+      const [installments, setInstallments] = useState(1);
+
+      // UI Drawers & Modals
+      const [isCartOpen, setIsCartOpen] = useState(false);
+      const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+      const [savedProposals, setSavedProposals] = useState([]);
+      const [historyLoading, setHistoryLoading] = useState(false);
+      const [historySearch, setHistorySearch] = useState('');
+      const [isSaving, setIsSaving] = useState(false);
+      const [toastMsg, setToastMsg] = useState(null);
+      const [copied, setCopied] = useState(false);
+      const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+
+      // --- AUTH LISTENER & INITIALIZATION ---
+      useEffect(() => {
+        if (!supabaseClient) {
+          setAuthLoading(false);
+          return;
+        }
+
+        const checkSession = async () => {
+          try {
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (session?.user) {
+              setUser(session.user);
+              await fetchProfile(session.user.id, session.user.email);
+            }
+          } catch (err) {
+            console.error("Erro na checagem de sessão:", err);
+          } finally {
+            setAuthLoading(false);
+          }
+        };
+
+        checkSession();
+
+        const { data: authListener } = supabaseClient.auth.onAuthStateChange(async (event, session) => {
+          if (session?.user) {
+            setUser(session.user);
+            await fetchProfile(session.user.id, session.user.email);
+          } else {
+            setUser(null);
+            setProfile(null);
+          }
+          setAuthLoading(false);
+        });
+
+        return () => {
+          authListener?.subscription?.unsubscribe();
+        };
+      }, []);
+
+      const fetchProfile = async (userId, userEmail) => {
+        if (!supabaseClient) return;
+        try {
+          const { data, error } = await supabaseClient
+            .from('profiles')
+            .select('*')
+            .eq('id', userId)
+            .single();
+
+          if (error) {
+            console.warn("Perfil ou tabela profiles não encontrada no Supabase:", error);
+            // Fallback: se a tabela ainda não foi criada, assume permissão de admin para não bloquear o app
+            setProfile({ id: userId, email: userEmail, is_admin: true, role: 'admin' });
+            return;
+          }
+
+          if (data) {
+            setProfile(data);
+          } else {
+            const newProfile = { id: userId, email: userEmail, is_admin: false, role: 'member' };
+            await supabaseClient.from('profiles').upsert(newProfile);
+            setProfile(newProfile);
+          }
+        } catch (e) {
+          console.error("Erro ao buscar perfil:", e);
+          setProfile({ id: userId, email: userEmail, is_admin: true, role: 'admin' });
+        }
+      };
+
+      const handleAuth = async (e) => {
+        e.preventDefault();
+        setAuthError('');
+        setAuthSuccess('');
+
+        if (!authEmail || !authPassword) {
+          setAuthError('Preencha todos os campos.');
+          return;
+        }
+
+        try {
+          if (!supabaseClient) {
+            throw new Error('Cliente Supabase não inicializado.');
+          }
+
+          if (authMode === 'signup') {
+            const { data, error } = await supabaseClient.auth.signUp({
+              email: authEmail,
+              password: authPassword,
+            });
+            if (error) throw error;
+            setAuthSuccess('Conta criada com sucesso! Solicite ao administrador a liberação do seu acesso.');
+          } else {
+            const { data, error } = await supabaseClient.auth.signInWithPassword({
+              email: authEmail,
+              password: authPassword,
+            });
+            if (error) throw error;
+          }
+        } catch (err) {
+          const rawMsg = err.message || '';
+          let userMsg = 'Falha na autenticação. Verifique suas credenciais.';
+          if (rawMsg.includes('Email not confirmed')) {
+            userMsg = 'Confirmação necessária: Um link foi enviado para o seu e-mail para validar a conta (ou desative a confirmação de e-mail no painel do Supabase).';
+          } else if (rawMsg.includes('Invalid login credentials')) {
+            userMsg = 'E-mail ou senha incorretos.';
+          } else if (rawMsg.includes('User already registered')) {
+            userMsg = 'Este e-mail já está cadastrado. Clique em Fazer Login.';
+          } else if (rawMsg.includes('Password should be at least')) {
+            userMsg = 'A senha deve ter no mínimo 6 caracteres.';
+          }
+          setAuthError(userMsg);
+        }
+      };
+
+      // Dev preview bypass
+      const handleDevLogin = () => {
+        const devUser = { id: 'dev_admin_viccs', email: 'admin@viccsdesign.com.br' };
+        setUser(devUser);
+        setProfile({ id: 'dev_admin_viccs', email: 'admin@viccsdesign.com.br', is_admin: true, role: 'admin' });
+        showToast("Conectado como Administrador!");
+      };
+
+      const handleLogout = async () => {
+        if (supabaseClient) await supabaseClient.auth.signOut();
+        setUser(null);
+        setProfile(null);
+      };
+
+      // --- PERSISTENCE TO LOCALSTORAGE ---
+      useEffect(() => {
+        try {
+          localStorage.setItem('viccs_pro_cart', JSON.stringify(cart));
+          localStorage.setItem('viccs_pro_client', clientName);
+          localStorage.setItem('viccs_pro_contact', clientContact);
+          localStorage.setItem('viccs_pro_obs', observations);
+        } catch (err) {
+          console.warn("Erro ao persistir no localStorage:", err);
+        }
+      }, [cart, clientName, clientContact, observations]);
+
+      // --- CALCULATIONS FOR CURRENT ITEM CONFIG ---
+      const activeService = useMemo(() => {
+        return BASE_SERVICES.find(s => s.id === selectedServiceId) || BASE_SERVICES[0];
+      }, [selectedServiceId]);
+
+      // Area Calculation
+      const computedArea = useMemo(() => {
+        if (inputMode === 'quick') return Math.max(0.1, parseFloat(dimensionM2) || 1);
+        let w = parseFloat(unitWidth) || 1;
+        let h = parseFloat(unitHeight) || 1;
+        if (unitType === 'cm') { w /= 100; h /= 100; }
+        if (unitType === 'mm') { w /= 1000; h /= 1000; }
+        return Math.max(0.01, parseFloat((w * h).toFixed(4)));
+      }, [inputMode, dimensionM2, unitWidth, unitHeight, unitType]);
+
+      // Current Single Item Price
+      const currentItemCalc = useMemo(() => {
+        const comp = COMPLEXITY_LEVELS.find(c => c.id === complexity) || COMPLEXITY_LEVELS[1];
+        const dline = DEADLINE_LEVELS.find(d => d.id === deadline) || DEADLINE_LEVELS[1];
+        
+        let base = activeService.basePrice;
+        let detailsString = '';
+
+        if (activeService.isMotion) {
+          const style = MOTION_STYLES.find(s => s.id === motionStyle) || MOTION_STYLES[1];
+          const secPrice = style.ratePerSec * motionSeconds;
+          base = Math.max(activeService.basePrice, secPrice);
+          const soundExtra = soundDesign ? 120 : 0;
+          const adjusted = (base * comp.multiplier * dline.multiplier) + soundExtra + (revisions * 50);
+          
+          detailsString = `${motionSeconds}s • ${style.name}${soundDesign ? ' • Com Sound Design' : ''} • ${comp.name} • Prazo ${dline.name}`;
+          return {
+            unitPrice: Math.round(adjusted),
+            details: detailsString,
+            base,
+            compMultiplier: comp.multiplier,
+            deadlineMultiplier: dline.multiplier
+          };
+        }
+
+        if (activeService.isArea) {
+          base = activeService.basePrice * computedArea;
+          const adjusted = (base * comp.multiplier * dline.multiplier) + (revisions * 50);
+          detailsString = `Área: ${computedArea} m² (${unitWidth}x${unitHeight} ${unitType}) • ${comp.name} • Prazo ${dline.name}`;
+          return {
+            unitPrice: Math.round(adjusted),
+            details: detailsString,
+            base,
+            compMultiplier: comp.multiplier,
+            deadlineMultiplier: dline.multiplier
+          };
+        }
+
+        // Standard Services
+        const adjusted = (base * comp.multiplier * dline.multiplier) + (revisions * 50);
+        detailsString = `${comp.name} • Prazo ${dline.name}${revisions > 0 ? ` • ${revisions}x Revisões` : ''}`;
+        return {
+          unitPrice: Math.round(adjusted),
+          details: detailsString,
+          base,
+          compMultiplier: comp.multiplier,
+          deadlineMultiplier: dline.multiplier
+        };
+      }, [activeService, motionSeconds, motionStyle, soundDesign, computedArea, complexity, deadline, revisions, unitWidth, unitHeight, unitType]);
+
+      // Add to Cart
+      const handleAddToCart = () => {
+        const newItem = {
+          id: 'item_' + Date.now(),
+          serviceId: activeService.id,
+          serviceName: activeService.name,
+          category: activeService.category,
+          quantity: 1,
+          unitPrice: currentItemCalc.unitPrice,
+          totalPrice: currentItemCalc.unitPrice,
+          details: currentItemCalc.details,
+          iconName: activeService.iconName
+        };
+
+        setCart(prev => [...prev, newItem]);
+        showToast(`Adicionado: ${activeService.name}`);
+      };
+
+      const handleUpdateQuantity = (itemId, delta) => {
+        setCart(prev => prev.map(item => {
+          if (item.id === itemId) {
+            const newQty = Math.max(1, item.quantity + delta);
+            return { ...item, quantity: newQty, totalPrice: newQty * item.unitPrice };
+          }
+          return item;
+        }));
+      };
+
+      const handleRemoveItem = (itemId) => {
+        setCart(prev => prev.filter(i => i.id !== itemId));
+      };
+
+      // --- CART TOTALS & COMMERCIAL FORMULA ---
+      const proposalTotals = useMemo(() => {
+        const subtotal = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+        const additions = Math.max(0, parseFloat(additionAmount) || 0);
+        const discount = Math.max(0, parseFloat(discountAmount) || 0);
+        
+        const adjustedSubtotal = Math.max(0, subtotal + additions - discount);
+        const activePayment = PAYMENT_METHODS.find(p => p.id === paymentMethod) || PAYMENT_METHODS[0];
+        const feeAmount = adjustedSubtotal * activePayment.fee;
+        const totalFinal = adjustedSubtotal + feeAmount;
+        
+        const installmentVal = installments > 1 ? totalFinal / installments : totalFinal;
+
+        return {
+          subtotal,
+          additions,
+          discount,
+          adjustedSubtotal,
+          feeAmount,
+          totalFinal,
+          installmentVal,
+          activePayment
+        };
+      }, [cart, additionAmount, discountAmount, paymentMethod, installments]);
+
+      // --- SUPABASE PROPOSALS SYNC ---
+      const fetchHistory = async () => {
+        if (!supabaseClient) return;
+        setHistoryLoading(true);
+        try {
+          let query = supabaseClient
+            .from('proposals')
+            .select('*, proposal_items(*)')
+            .order('created_at', { ascending: false });
+
+          if (historySearch) {
+            query = query.ilike('client_name', `%${historySearch}%`);
+          }
+
+          const { data, error } = await query;
+          if (error) throw error;
+          setSavedProposals(data || []);
+        } catch (err) {
+          console.error("Erro ao carregar histórico:", err);
+          showToast("Erro ao carregar histórico de propostas.");
+        } finally {
+          setHistoryLoading(false);
+        }
+      };
+
+      const handleSaveProposal = async () => {
+        if (!clientName.trim()) {
+          showToast("Informe o nome do cliente antes de salvar.");
+          setIsCartOpen(true);
+          return;
+        }
+
+        if (cart.length === 0) {
+          showToast("O carrinho está vazio.");
+          return;
+        }
+
+        if (!supabaseClient) {
+          showToast("Supabase não configurado. Proposta mantida localmente.");
+          return;
+        }
+
+        setIsSaving(true);
+        try {
+          const proposalPayload = {
+            client_name: clientName,
+            client_contact: clientContact,
+            subtotal: proposalTotals.subtotal,
+            additions: proposalTotals.additions,
+            additions_reason: additionReason,
+            discount: proposalTotals.discount,
+            discount_reason: discountReason,
+            total_value: proposalTotals.totalFinal,
+            payment_method: paymentMethod,
+            installments: installments,
+            payment_fee: proposalTotals.feeAmount,
+            installment_value: proposalTotals.installmentVal,
+            observations: observations,
+            status: 'saved',
+            created_by: user?.id
+          };
+
+          const { data: propData, error: propErr } = await supabaseClient
+            .from('proposals')
+            .insert(proposalPayload)
+            .select()
+            .single();
+
+          if (propErr) throw propErr;
+
+          const itemsPayload = cart.map(item => ({
+            proposal_id: propData.id,
+            service_id: item.serviceId,
+            service_name: item.serviceName,
+            category: item.category,
+            quantity: item.quantity,
+            unit_price: item.unitPrice,
+            total_price: item.totalPrice,
+            item_details: { details: item.details }
+          }));
+
+          const { error: itemsErr } = await supabaseClient
+            .from('proposal_items')
+            .insert(itemsPayload);
+
+          if (itemsErr) throw itemsErr;
+
+          showToast("✅ Orçamento salvo com sucesso no banco!");
+        } catch (err) {
+          console.error("Erro ao salvar no Supabase:", err);
+          showToast("Salvo localmente! (Erro de sincronização com nuvem)");
+        } finally {
+          setIsSaving(false);
+        }
+      };
+
+      // Toast Notification
+      const showToast = (msg) => {
+        setToastMsg(msg);
+        setTimeout(() => setToastMsg(null), 3500);
+      };
+
+      // Copy Proposal to Clipboard (WhatsApp formatted)
+      const handleCopyProposal = () => {
+        if (cart.length === 0) {
+          showToast("Adicione itens ao orçamento para copiar.");
+          return;
+        }
+
+        let text = `*PROPOSTA COMERCIAL — VICCS DESIGN*\n`;
+        text += `Cliente: ${clientName || 'A/C Cliente'}\n`;
+        text += `Data: ${new Date().toLocaleDateString('pt-BR')}\n`;
+        text += `------------------------------------\n\n`;
+        text += `*ITENS DO ESCOPO:*\n`;
+
+        cart.forEach((item, index) => {
+          text += `${index + 1}. *${item.serviceName}* (x${item.quantity})\n`;
+          text += `   _${item.details}_\n`;
+          text += `   Valor: ${formatCurrency(item.totalPrice)}\n\n`;
+        });
+
+        text += `------------------------------------\n`;
+        text += `Subtotal: ${formatCurrency(proposalTotals.subtotal)}\n`;
+        
+        if (proposalTotals.additions > 0) {
+          text += `+ Acréscimos: ${formatCurrency(proposalTotals.additions)} ${additionReason ? `(${additionReason})` : ''}\n`;
+        }
+        if (proposalTotals.discount > 0) {
+          text += `- Desconto: ${formatCurrency(proposalTotals.discount)} ${discountReason ? `(${discountReason})` : ''}\n`;
+        }
+
+        text += `*INVESTIMENTO TOTAL: ${formatCurrency(proposalTotals.totalFinal)}*\n\n`;
+        text += `*Condição de Pagamento:* ${proposalTotals.activePayment.name}\n`;
+        if (installments > 1) {
+          text += `Parcelamento: ${installments}x de ${formatCurrency(proposalTotals.installmentVal)}\n`;
+        }
+
+        text += `\n*Chave PIX:* 83664d59-36a5-46ae-a2e6-768ad1e6db6a (Aleatória)\n`;
+        text += `*Titular:* Matheus Victor / VICCS Design\n`;
+
+        if (observations) {
+          text += `\n*Observações:* ${observations}\n`;
+        }
+
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(text).then(() => {
+            setCopied(true);
+            showToast("Resumo copiado com sucesso!");
+            setTimeout(() => setCopied(false), 2500);
+          });
+        }
+      };
+
+      // Generate & Download PDF
+      const handleGeneratePDF = async () => {
+        if (cart.length === 0) {
+          showToast("Adicione itens ao orçamento para gerar o PDF.");
+          return;
+        }
+
+        setIsGeneratingPDF(true);
+        showToast("Gerando PDF com renderização contínua...");
+
+        try {
+          const element = document.getElementById('pdf-proposal');
+          if (!element) return;
+
+          element.classList.remove('hidden');
+
+          const canvas = await html2canvas(element, {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            backgroundColor: '#ffffff'
+          });
+
+          element.classList.add('hidden');
+
+          const { jsPDF } = window.jspdf;
+          const pdf = new jsPDF('p', 'mm', 'a4');
+          const imgData = canvas.toDataURL('image/png', 0.85);
+
+          const pdfWidth = 210;
+          const pageHeight = 297;
+          const imgHeight = (canvas.height * pdfWidth) / canvas.width;
+          let heightLeft = imgHeight;
+          let position = 0;
+
+          pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+          heightLeft -= pageHeight;
+
+          while (heightLeft >= 0) {
+            position = heightLeft - imgHeight;
+            pdf.addPage();
+            pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, imgHeight, undefined, 'FAST');
+            heightLeft -= pageHeight;
+          }
+
+          const fileName = `Proposta_${(clientName || 'Cliente').replace(/\s+/g, '_')}_VICCS.pdf`;
+          pdf.save(fileName);
+          showToast("✅ PDF gerado e baixado com sucesso!");
+        } catch (err) {
+          console.error("Erro ao gerar PDF:", err);
+          showToast("Erro na criação do PDF.");
+        } finally {
+          setIsGeneratingPDF(false);
+        }
+      };
+
+      // Filtered Services List
+      const filteredServices = useMemo(() => {
+        if (activeCategory === 'all') return BASE_SERVICES;
+        return BASE_SERVICES.filter(s => s.category === activeCategory);
+      }, [activeCategory]);
+
+      // --- VIEW 1: LOADING ---
+      if (authLoading) {
+        return (
+          <div className="min-h-screen bg-[#070709] flex flex-col items-center justify-center space-y-4">
+            <div className="w-12 h-12 rounded-full border-2 border-purple-500/20 border-t-purple-500 animate-spin"></div>
+            <p className="text-sm font-medium text-slate-400">Iniciando VICCS Pricing Pro...</p>
+          </div>
+        );
+      }
+
+      // --- VIEW 2: AUTH / LOGIN SCREEN (Liquid Glass Card matching Reference 5) ---
+      if (!user) {
+        return (
+          <div className="min-h-screen bg-[#070709] flex items-center justify-center p-4 relative overflow-hidden">
+            {/* Ambient Background Glows */}
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-purple-600/15 via-rose-600/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+
+            {/* Liquid Glass Login Card */}
+            <div className="relative w-full max-w-md liquid-glass rounded-3xl p-8 sm:p-10 shadow-glass border border-white/[0.08] border-t-white/[0.22] overflow-hidden">
+              {/* Light leak specular reflection */}
+              <div className="absolute -top-12 -left-12 w-40 h-40 bg-gradient-to-br from-rose-500/30 via-purple-500/20 to-transparent rounded-full blur-2xl pointer-events-none"></div>
+
+              <div className="text-center mb-8 relative z-10">
+                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600/20 to-rose-500/20 border border-white/10 mb-4 shadow-glow-purple">
+                  <Icon name="palette" className="w-7 h-7 text-purple-400" />
+                </div>
+                <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
+                  {authMode === 'login' ? 'Welcome back' : 'Create an account'}
+                </h1>
+                <p className="text-xs sm:text-sm text-slate-400 mt-1.5">
+                  {authMode === 'login' ? 'Sign in to your Viccs pricing workspace' : 'Cadastre seu e-mail para acesso restrito'}
+                </p>
+              </div>
+
+              {authError && (
+                <div className="mb-5 p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs flex items-center gap-2">
+                  <Icon name="x" className="w-4 h-4 text-rose-400 flex-shrink-0" />
+                  <span>{authError}</span>
+                </div>
+              )}
+
+              {authSuccess && (
+                <div className="mb-5 p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+                  <Icon name="check" className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                  <span>{authSuccess}</span>
+                </div>
+              )}
+
+              <form onSubmit={handleAuth} className="space-y-4 relative z-10">
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5 ml-1">E-mail</label>
+                  <input
+                    type="email"
+                    required
+                    value={authEmail}
+                    onChange={(e) => setAuthEmail(e.target.value)}
+                    placeholder="seuemail@viccs.com.br"
+                    className="w-full px-4 py-3 rounded-xl liquid-glass-input text-sm text-white placeholder-slate-500 focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5 ml-1">Senha</label>
+                  <div className="relative">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      required
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      placeholder="••••••••"
+                      className="w-full px-4 py-3 pr-12 rounded-xl liquid-glass-input text-sm text-white placeholder-slate-500 focus:outline-none"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-slate-200 transition-colors"
+                      title={showPassword ? "Ocultar senha" : "Ver senha"}
+                    >
+                      <Icon name={showPassword ? "eye-off" : "eye"} className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  className="w-full mt-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-rose-500 via-purple-600 to-indigo-600 text-white font-semibold text-sm shadow-glow-pink hover:opacity-95 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                >
+                  <span>{authMode === 'login' ? 'Entrar no Sistema' : 'Cadastrar Usuário'}</span>
+                  <Icon name="arrow-right" className="w-4 h-4" />
+                </button>
+              </form>
+
+              <div className="mt-8 text-center text-xs text-slate-400 relative z-10 flex flex-col items-center gap-3">
+                {authMode === 'login' ? (
+                  <span>
+                    Não possui uma conta?{' '}
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('signup'); setAuthError(''); setAuthSuccess(''); }}
+                      className="text-rose-400 hover:text-rose-300 font-medium underline underline-offset-4 ml-1"
+                    >
+                      Cadastre-se
+                    </button>
+                  </span>
+                ) : (
+                  <span>
+                    Já possui uma conta?{' '}
+                    <button
+                      type="button"
+                      onClick={() => { setAuthMode('login'); setAuthError(''); setAuthSuccess(''); }}
+                      className="text-purple-400 hover:text-purple-300 font-medium underline underline-offset-4 ml-1"
+                    >
+                      Fazer Login
+                    </button>
+                  </span>
+                )}
+
+                {/* Dev Mode Bypass for Instant Testing */}
+                <button
+                  type="button"
+                  onClick={handleDevLogin}
+                  className="text-[11px] text-slate-500 hover:text-purple-400 transition-colors pt-2 border-t border-white/[0.05] w-full"
+                >
+                  ⚡ Entrar direto como Administrador (Preview Local)
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // --- VIEW 3: PENDING ADMIN APPROVAL ---
+      if (profile && !profile.is_admin) {
+        return (
+          <div className="min-h-screen bg-[#070709] flex items-center justify-center p-4">
+            <div className="w-full max-w-md liquid-glass rounded-3xl p-8 text-center shadow-glass border border-amber-500/20">
+              <div className="inline-flex p-4 rounded-2xl bg-amber-500/10 text-amber-400 mb-4 border border-amber-500/20">
+                <Icon name="shield" className="w-8 h-8" />
+              </div>
+              <h2 className="text-xl font-bold text-white mb-2">Acesso Pendente de Aprovação</h2>
+              <p className="text-sm text-slate-400 mb-6">
+                Sua conta (<span className="text-slate-200">{user.email}</span>) foi criada com sucesso, mas requer que o administrador ative sua permissão no Supabase (<code className="text-xs bg-slate-800 px-1.5 py-0.5 rounded text-amber-300">is_admin = true</code>).
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => fetchProfile(user.id, user.email)}
+                  className="flex-1 py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-medium text-xs border border-white/10 transition-colors"
+                >
+                  Verificar Novamente
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="py-3 px-4 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 font-medium text-xs border border-rose-500/20 transition-colors"
+                >
+                  Sair
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // --- VIEW 4: MAIN AUTHORIZED DASHBOARD ---
+      return (
+        <div className="min-h-screen bg-[#070709] flex flex-col pb-32 lg:pb-12">
+          {/* Toast Notification */}
+          {toastMsg && (
+            <div className="fixed top-5 right-5 z-50 px-4 py-3 rounded-xl bg-slate-900/95 border border-purple-500/40 text-white text-xs font-medium shadow-glow-purple flex items-center gap-2 backdrop-blur-lg animate-bounce">
+              <Icon name="check" className="w-4 h-4 text-purple-400" />
+              <span>{toastMsg}</span>
+            </div>
+          )}
+
+          {/* Top Navbar (Liquid Glass) */}
+          <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#070709]/80 backdrop-blur-2xl px-4 sm:px-8 py-3.5">
+            <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
+              {/* Brand Logo */}
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center shadow-glow-purple border border-white/20">
+                  <span className="font-extrabold text-white text-sm tracking-tighter">V</span>
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-white tracking-tight text-base">VICCS Pricing</span>
+                    <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                      PRO
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-400 hidden sm:block">Engenharia de Orçamentos & Propostas</p>
+                </div>
+              </div>
+
+              {/* Action Nav Controls */}
+              <div className="flex items-center gap-2.5">
+                {/* History Drawer Trigger */}
+                <button
+                  onClick={() => { setIsHistoryOpen(true); fetchHistory(); }}
+                  className="px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/10 text-xs font-medium transition-all flex items-center gap-1.5"
+                >
+                  <Icon name="history" className="w-4 h-4 text-purple-400" />
+                  <span className="hidden sm:inline">Histórico</span>
+                </button>
+
+                {/* Cart Drawer Trigger */}
+                <button
+                  onClick={() => setIsCartOpen(true)}
+                  className="relative px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold shadow-glow-purple hover:opacity-95 transition-all flex items-center gap-2"
+                >
+                  <Icon name="cart" className="w-4 h-4" />
+                  <span>Carrinho</span>
+                  {cart.length > 0 && (
+                    <span className="px-1.5 py-0.2 text-[10px] font-bold bg-white text-purple-900 rounded-full">
+                      {cart.reduce((s, i) => s + i.quantity, 0)}
+                    </span>
+                  )}
+                </button>
+
+                {/* User / Logout */}
+                <button
+                  onClick={handleLogout}
+                  title="Sair do sistema"
+                  className="p-2 rounded-xl bg-slate-900/60 hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 border border-white/10 transition-colors"
+                >
+                  <Icon name="logout" className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {/* Main Layout Grid */}
+          <main className="max-w-7xl mx-auto w-full px-4 sm:px-8 pt-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
+            
+            {/* LEFT COLUMN: Categories & Service Selection (lg:col-span-7) */}
+            <div className="lg:col-span-7 space-y-6">
+              
+              {/* Category Pills (Workly / SmartShort Style) */}
+              <div className="space-y-2.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Categorias de Serviço</label>
+                <div className="flex flex-wrap gap-2">
+                  {CATEGORIES.map(cat => {
+                    const isActive = activeCategory === cat.id;
+                    return (
+                      <button
+                        key={cat.id}
+                        onClick={() => setActiveCategory(cat.id)}
+                        className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all flex items-center gap-2 border ${
+                          isActive
+                            ? 'bg-purple-600/25 text-white border-purple-500/60 shadow-glow-purple'
+                            : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-white/[0.07] hover:border-white/15'
+                        }`}
+                      >
+                        <Icon name={cat.iconName} className={`w-3.5 h-3.5 ${isActive ? 'text-purple-300' : 'text-slate-500'}`} />
+                        <span>{cat.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Service Cards Grid */}
+              <div className="space-y-2.5">
+                <label className="text-xs font-semibold uppercase tracking-wider text-slate-400">Selecione o Serviço Base</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[380px] overflow-y-auto pr-1">
+                  {filteredServices.map(service => {
+                    const isSelected = selectedServiceId === service.id;
+                    return (
+                      <div
+                        key={service.id}
+                        onClick={() => setSelectedServiceId(service.id)}
+                        className={`p-4 rounded-2xl liquid-glass cursor-pointer transition-all border relative group ${
+                          isSelected
+                            ? 'border-purple-500/70 bg-purple-950/20 shadow-glow-purple'
+                            : 'hover:border-white/20'
+                        }`}
+                      >
+                        {/* Active Pill Glow Indicator (SmartShort style) */}
+                        {isSelected && (
+                          <div className="absolute left-0 top-3 bottom-3 w-1 bg-purple-500 rounded-r-full shadow-[0_0_12px_#a855f7]"></div>
+                        )}
+
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex items-center gap-2.5">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center border ${
+                              isSelected ? 'bg-purple-500/20 text-purple-300 border-purple-500/40' : 'bg-slate-900 text-slate-400 border-white/10'
+                            }`}>
+                              <Icon name={service.iconName} className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h3 className="text-sm font-semibold text-white group-hover:text-purple-200 transition-colors">
+                                {service.name}
+                              </h3>
+                              <p className="text-[11px] text-slate-400 line-clamp-1">{service.desc}</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 pt-2.5 border-t border-white/[0.06] flex items-center justify-between text-xs">
+                          <span className="text-slate-400 font-normal">Base:</span>
+                          <span className="font-semibold text-slate-200">
+                            {formatCurrency(service.basePrice)} {service.isArea ? '/m²' : service.isMotion ? ' (estim.)' : ''}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* DYNAMIC PARAMETRIC CONFIGURATOR */}
+              <div className="p-6 rounded-3xl liquid-glass border border-white/[0.08] space-y-6">
+                
+                {/* 1. MOTION DESIGN PARAMETRIC CONFIG */}
+                {activeService.isMotion && (
+                  <div className="space-y-5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Icon name="motion" className="w-4 h-4 text-purple-400" />
+                        <h4 className="text-sm font-semibold text-white">Parâmetros de Motion Design</h4>
+                      </div>
+                      <span className="text-xs font-bold text-purple-400 px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+                        {motionSeconds} segundos
+                      </span>
+                    </div>
+
+                    {/* Seconds Slider */}
+                    <div>
+                      <div className="flex justify-between text-xs text-slate-400 mb-2">
+                        <span>Duração da Animação</span>
+                        <span className="text-white font-medium">{motionSeconds}s</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="5"
+                        max="120"
+                        step="5"
+                        value={motionSeconds}
+                        onChange={(e) => setMotionSeconds(parseInt(e.target.value))}
+                        className="w-full accent-purple-500 bg-slate-800 rounded-lg cursor-pointer h-2"
+                      />
+                      <div className="flex justify-between text-[10px] text-slate-400 mt-1">
+                        <span>5s (Stories rápido)</span>
+                        <span>30s (Padrão)</span>
+                        <span>60s (Institucional)</span>
+                        <span>120s+</span>
+                      </div>
+                    </div>
+
+                    {/* Style / Complexity Cards */}
+                    <div>
+                      <label className="block text-xs text-slate-400 mb-2">Estilo & Complexidade Visual</label>
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
+                        {MOTION_STYLES.map(style => {
+                          const isSel = motionStyle === style.id;
+                          return (
+                            <button
+                              key={style.id}
+                              type="button"
+                              onClick={() => setMotionStyle(style.id)}
+                              className={`p-3 rounded-xl text-left border transition-all ${
+                                isSel
+                                  ? 'bg-purple-600/20 border-purple-500 text-white shadow-glow-purple'
+                                  : 'bg-slate-900/70 border-white/[0.08] text-slate-400 hover:text-slate-200'
+                              }`}
+                            >
+                              <div className="text-xs font-semibold mb-0.5">{style.name}</div>
+                              <div className="text-[10px] text-slate-400">{style.desc}</div>
+                              <div className="text-[10px] font-medium text-purple-300 mt-1.5">
+                                {formatCurrency(style.ratePerSec)}/s
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Sound Design Toggle */}
+                    <div className="p-3.5 rounded-xl bg-slate-900/60 border border-white/[0.08] flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <Icon name="sound" className="w-4 h-4 text-purple-400" />
+                        <div>
+                          <div className="text-xs font-semibold text-white">Sound Design & Trilha Sonora</div>
+                          <div className="text-[10px] text-slate-400">Efeitos sonoros sincronizados e música comercial</div>
+                        </div>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={soundDesign}
+                          onChange={(e) => setSoundDesign(e.target.checked)}
+                          className="sr-only peer"
+                        />
+                        <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                {/* 2. PRINT / ÁREA PARAMETRIC CONFIG */}
+                {activeService.isArea && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Icon name="printer" className="w-4 h-4 text-purple-400" />
+                        <h4 className="text-sm font-semibold text-white">Dimensões de Impressão</h4>
+                      </div>
+                      <span className="text-xs font-bold text-purple-400 px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+                        {computedArea} m² calculados
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Largura</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0.1"
+                          value={unitWidth}
+                          onChange={(e) => setUnitWidth(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl liquid-glass-input text-xs text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Altura</label>
+                        <input
+                          type="number"
+                          step="0.1"
+                          min="0.1"
+                          value={unitHeight}
+                          onChange={(e) => setUnitHeight(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl liquid-glass-input text-xs text-white"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[11px] text-slate-400 mb-1">Unidade</label>
+                        <select
+                          value={unitType}
+                          onChange={(e) => setUnitType(e.target.value)}
+                          className="w-full px-3 py-2 rounded-xl liquid-glass-input text-xs text-white"
+                        >
+                          <option value="m">Metros (m)</option>
+                          <option value="cm">Centímetros (cm)</option>
+                          <option value="mm">Milímetros (mm)</option>
+                        </select>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* 3. COMPLEXITY & DEADLINE (UNIVERSAL SLIDERS) */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-white/[0.08]">
+                  {/* Complexity */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Complexidade do Job</label>
+                    <select
+                      value={complexity}
+                      onChange={(e) => setComplexity(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl liquid-glass-input text-xs text-white"
+                    >
+                      {COMPLEXITY_LEVELS.map(c => (
+                        <option key={c.id} value={c.id}>
+                          {c.name} ({c.multiplier}x) — {c.desc}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Deadline */}
+                  <div>
+                    <label className="block text-xs font-medium text-slate-300 mb-1.5">Prazo de Entrega</label>
+                    <select
+                      value={deadline}
+                      onChange={(e) => setDeadline(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl liquid-glass-input text-xs text-white"
+                    >
+                      {DEADLINE_LEVELS.map(d => (
+                        <option key={d.id} value={d.id}>
+                          {d.name} ({d.multiplier}x) — {d.desc}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                {/* ADD TO CART ACTION BUTTON */}
+                <div className="pt-3 border-t border-white/[0.08] flex items-center justify-between gap-4">
+                  <div>
+                    <div className="text-[11px] text-slate-400">Valor Estimado do Item</div>
+                    <div className="text-xl font-bold text-white">{formatCurrency(currentItemCalc.unitPrice)}</div>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={handleAddToCart}
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 text-white font-semibold text-xs shadow-glow-purple hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+                  >
+                    <Icon name="plus" className="w-4 h-4" />
+                    <span>+ Adicionar ao Orçamento</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+            {/* RIGHT COLUMN: Realtime Cart & Proposal Summary (lg:col-span-5) */}
+            <div className="lg:col-span-5 space-y-6">
+              
+              {/* Proposal Header Card */}
+              <div className="p-6 rounded-3xl liquid-glass border border-white/[0.08] space-y-5">
+                <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
+                  <div className="flex items-center gap-2">
+                    <Icon name="cart" className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-base font-bold text-white">Resumo da Proposta</h3>
+                  </div>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-white/10 font-medium">
+                    {cart.length} {cart.length === 1 ? 'item' : 'itens'}
+                  </span>
+                </div>
+
+                {/* Client Info Inputs */}
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-400 mb-1">Nome do Cliente / Empresa</label>
+                    <input
+                      type="text"
+                      value={clientName}
+                      onChange={(e) => setClientName(e.target.value)}
+                      placeholder="Ex: Restaurante Tokyo / João Silva"
+                      className="w-full px-3.5 py-2 rounded-xl liquid-glass-input text-xs text-white placeholder-slate-600"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-medium text-slate-400 mb-1">Contato / WhatsApp</label>
+                    <input
+                      type="text"
+                      value={clientContact}
+                      onChange={(e) => setClientContact(e.target.value)}
+                      placeholder="(11) 99999-9999"
+                      className="w-full px-3.5 py-2 rounded-xl liquid-glass-input text-xs text-white placeholder-slate-600"
+                    />
+                  </div>
+                </div>
+
+                {/* Cart Items List */}
+                <div className="space-y-2.5 max-h-[220px] overflow-y-auto pr-1">
+                  {cart.length === 0 ? (
+                    <div className="p-6 rounded-2xl border border-dashed border-white/10 text-center text-slate-500 text-xs">
+                      Nenhum serviço adicionado ainda.<br />
+                      Selecione um serviço à esquerda e clique em <b>Adicionar ao Orçamento</b>.
+                    </div>
+                  ) : (
+                    cart.map(item => (
+                      <div key={item.id} className="p-3 rounded-2xl bg-slate-900/80 border border-white/[0.06] flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-semibold text-white truncate">{item.serviceName}</div>
+                          <div className="text-[10px] text-slate-400 truncate">{item.details}</div>
+                          <div className="text-xs font-semibold text-purple-300 mt-1">{formatCurrency(item.totalPrice)}</div>
+                        </div>
+
+                        {/* Quantity Controls & Remove */}
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          <div className="flex items-center rounded-lg bg-slate-800 border border-white/10 p-0.5">
+                            <button
+                              onClick={() => handleUpdateQuantity(item.id, -1)}
+                              className="px-2 py-0.5 text-xs text-slate-300 hover:text-white"
+                            >
+                              -
+                            </button>
+                            <span className="px-2 text-xs font-bold text-white">{item.quantity}</span>
+                            <button
+                              onClick={() => handleUpdateQuantity(item.id, 1)}
+                              className="px-2 py-0.5 text-xs text-slate-300 hover:text-white"
+                            >
+                              +
+                            </button>
+                          </div>
+                          <button
+                            onClick={() => handleRemoveItem(item.id)}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-rose-400 transition-colors"
+                            title="Remover item"
+                          >
+                            <Icon name="trash" className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                {/* COMMERCIAL ADJUSTMENTS (Additions & Discounts with Justification) */}
+                <div className="p-4 rounded-2xl bg-slate-950/60 border border-white/[0.08] space-y-3">
+                  <div className="text-xs font-semibold text-slate-300">Ajustes Comerciais & Justificativas</div>
+                  
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Additions */}
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Acréscimo (+R$)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={additionAmount || ''}
+                        onChange={(e) => setAdditionAmount(e.target.value)}
+                        placeholder="0,00"
+                        className="w-full px-3 py-1.5 rounded-lg liquid-glass-input text-xs text-white"
+                      />
+                    </div>
+                    {/* Discount */}
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Desconto (-R$)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        value={discountAmount || ''}
+                        onChange={(e) => setDiscountAmount(e.target.value)}
+                        placeholder="0,00"
+                        className="w-full px-3 py-1.5 rounded-lg liquid-glass-input text-xs text-green-400"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Justification Textareas */}
+                  {additionAmount > 0 && (
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Justificativa do Acréscimo (Impresso no PDF)</label>
+                      <input
+                        type="text"
+                        value={additionReason}
+                        onChange={(e) => setAdditionReason(e.target.value)}
+                        placeholder="Ex: Licenciamento de trilha internacional / Render 4K"
+                        className="w-full px-3 py-1.5 rounded-lg liquid-glass-input text-[11px] text-white"
+                      />
+                    </div>
+                  )}
+
+                  {discountAmount > 0 && (
+                    <div>
+                      <label className="block text-[10px] text-slate-400 mb-1">Justificativa do Desconto (Impresso no PDF)</label>
+                      <input
+                        type="text"
+                        value={discountReason}
+                        onChange={(e) => setDiscountReason(e.target.value)}
+                        placeholder="Ex: Parceria de longo prazo / Fechamento à vista"
+                        className="w-full px-3 py-1.5 rounded-lg liquid-glass-input text-[11px] text-white"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* PAYMENT METHOD & INSTALLMENTS */}
+                <div className="space-y-2.5">
+                  <label className="block text-xs font-semibold text-slate-300">Forma de Pagamento</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {PAYMENT_METHODS.map(pay => (
+                      <button
+                        key={pay.id}
+                        type="button"
+                        onClick={() => setPaymentMethod(pay.id)}
+                        className={`p-2.5 rounded-xl text-left border text-xs transition-all ${
+                          paymentMethod === pay.id
+                            ? 'bg-purple-600/25 border-purple-500 text-white shadow-glow-purple font-semibold'
+                            : 'bg-slate-900/60 border-white/[0.08] text-slate-400 hover:text-slate-200'
+                        }`}
+                      >
+                        {pay.name}
+                      </button>
+                    ))}
+                  </div>
+
+                  {paymentMethod === 'cartao_parcelado' && (
+                    <div className="pt-2">
+                      <div className="flex justify-between text-xs text-slate-400 mb-1">
+                        <span>Número de Parcelas</span>
+                        <span className="text-purple-300 font-bold">{installments}x de {formatCurrency(proposalTotals.installmentVal)}</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="2"
+                        max="12"
+                        value={installments}
+                        onChange={(e) => setInstallments(parseInt(e.target.value))}
+                        className="w-full accent-purple-500 bg-slate-800 rounded-lg cursor-pointer h-2"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                {/* TOTAL INVESTMENT & ACTIONS */}
+                <div className="pt-4 border-t border-white/[0.08] space-y-4">
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <span className="text-xs text-slate-400">Investimento Final</span>
+                      {installments > 1 && paymentMethod === 'cartao_parcelado' && (
+                        <div className="text-[11px] text-purple-400 font-medium">
+                          {installments}x de {formatCurrency(proposalTotals.installmentVal)}
+                        </div>
+                      )}
+                    </div>
+                    <div className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">
+                      {formatCurrency(proposalTotals.totalFinal)}
+                    </div>
+                  </div>
+
+                  {/* Primary & Secondary Action CTAs */}
+                  <div className="grid grid-cols-2 gap-2.5">
+                    <button
+                      onClick={handleCopyProposal}
+                      className="py-3 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-white/10 transition-all flex items-center justify-center gap-1.5"
+                    >
+                      <Icon name={copied ? 'check' : 'copy'} className="w-4 h-4 text-purple-400" />
+                      <span>{copied ? 'Copiado!' : 'Copiar Resumo'}</span>
+                    </button>
+
+                    <button
+                      onClick={handleGeneratePDF}
+                      disabled={isGeneratingPDF}
+                      className="py-3 px-3 rounded-xl bg-gradient-to-r from-rose-500 to-purple-600 text-white font-semibold text-xs shadow-glow-pink hover:opacity-95 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                    >
+                      <Icon name="pdf" className="w-4 h-4" />
+                      <span>{isGeneratingPDF ? 'Gerando...' : 'Gerar PDF'}</span>
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={handleSaveProposal}
+                    disabled={isSaving}
+                    className="w-full py-3 px-4 rounded-xl bg-purple-600/30 hover:bg-purple-600/40 text-purple-200 border border-purple-500/50 font-semibold text-xs transition-all flex items-center justify-center gap-2"
+                  >
+                    <Icon name="shield" className="w-4 h-4 text-purple-400" />
+                    <span>{isSaving ? 'Salvando no Supabase...' : 'Salvar Proposta no Banco de Dados'}</span>
+                  </button>
+                </div>
+
+              </div>
+            </div>
+
+          </main>
+
+          {/* HISTORY DRAWER (Slide-over Modal) */}
+          {isHistoryOpen && (
+            <div className="fixed inset-0 z-50 flex justify-end bg-black/60 backdrop-blur-sm animate-fade-in">
+              <div className="w-full max-w-lg bg-[#0d0d14] border-l border-white/10 h-full p-6 flex flex-col shadow-2xl">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                  <div className="flex items-center gap-2">
+                    <Icon name="history" className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-base font-bold text-white">Histórico de Propostas Salvas</h3>
+                  </div>
+                  <button onClick={() => setIsHistoryOpen(false)} className="p-1 rounded-lg text-slate-400 hover:text-white">
+                    <Icon name="close" className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="my-4">
+                  <input
+                    type="text"
+                    value={historySearch}
+                    onChange={(e) => setHistorySearch(e.target.value)}
+                    placeholder="Buscar por nome do cliente..."
+                    className="w-full px-3.5 py-2 rounded-xl liquid-glass-input text-xs text-white"
+                  />
+                </div>
+
+                <div className="flex-1 overflow-y-auto space-y-3">
+                  {historyLoading ? (
+                    <div className="text-center py-10 text-slate-400 text-xs">Carregando histórico...</div>
+                  ) : savedProposals.length === 0 ? (
+                    <div className="text-center py-10 text-slate-500 text-xs">Nenhuma proposta encontrada no Supabase.</div>
+                  ) : (
+                    savedProposals.map(prop => (
+                      <div key={prop.id} className="p-4 rounded-2xl bg-slate-900/80 border border-white/[0.08] space-y-2">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <h4 className="text-sm font-bold text-white">{prop.client_name}</h4>
+                            <p className="text-[10px] text-slate-400">{new Date(prop.created_at).toLocaleString('pt-BR')}</p>
+                          </div>
+                          <span className="text-sm font-extrabold text-purple-400">{formatCurrency(prop.total_value)}</span>
+                        </div>
+
+                        <div className="text-[11px] text-slate-400">
+                          {prop.proposal_items?.length || 0} itens • {prop.payment_method}
+                        </div>
+
+                        <button
+                          onClick={() => {
+                            setClientName(prop.client_name);
+                            setClientContact(prop.client_contact || '');
+                            setAdditionAmount(prop.additions || 0);
+                            setAdditionReason(prop.additions_reason || '');
+                            setDiscountAmount(prop.discount || 0);
+                            setDiscountReason(prop.discount_reason || '');
+                            setObservations(prop.observations || '');
+                            if (prop.proposal_items) {
+                              setCart(prop.proposal_items.map(item => ({
+                                id: 'item_' + Date.now() + Math.random(),
+                                serviceId: item.service_id,
+                                serviceName: item.service_name,
+                                category: item.category,
+                                quantity: item.quantity,
+                                unitPrice: item.unit_price,
+                                totalPrice: item.total_price,
+                                details: item.item_details?.details || '',
+                                iconName: 'palette'
+                              })));
+                            }
+                            setIsHistoryOpen(false);
+                            showToast(`Proposta de ${prop.client_name} carregada!`);
+                          }}
+                          className="w-full mt-2 py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-xs font-semibold border border-purple-500/30 transition-colors"
+                        >
+                          Carregar no Editor
+                        </button>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* HIDDEN CLEAN PDF TEMPLATE (RENDERED TO CANVAS & EXPORTED AS CONTINUOUS MULTIPAGE PDF) */}
+          <div id="pdf-proposal" className="bg-white text-slate-900 p-12 w-[800px] hidden absolute top-0 left-0 z-[-1]" style={{ width: '800px', margin: '0 auto', background: '#ffffff' }}>
+            {/* Header */}
+            <div className="flex justify-between items-start border-b-2 border-slate-200 pb-6 mb-8">
+              <div>
+                <h1 className="text-2xl font-black tracking-tight text-slate-950">PROPOSTA COMERCIAL</h1>
+                <p className="text-xs text-slate-500 font-medium mt-1">Data: {new Date().toLocaleDateString('pt-BR')} • Validade: 15 dias</p>
+                <div className="mt-3 text-xs">
+                  <span className="text-slate-500 font-medium">Cliente:</span>{' '}
+                  <span className="font-bold text-slate-900 text-sm">{clientName || 'A/C Cliente'}</span>
+                  {clientContact && <span className="text-slate-500 ml-2">({clientContact})</span>}
+                </div>
+              </div>
+              <div className="text-right">
+                <div className="text-xl font-black text-purple-700">VICCS DESIGN</div>
+                <div className="text-xs text-slate-500">contato@viccs.com.br</div>
+                <div className="text-xs text-slate-500">viccsdesign.vercel.app</div>
+              </div>
+            </div>
+
+            {/* Scope Table */}
+            <div className="mb-8">
+              <h2 className="text-sm font-bold text-slate-950 uppercase tracking-wider mb-3">Escopo do Projeto</h2>
+              <table className="w-full border-collapse text-left text-xs">
+                <thead>
+                  <tr className="border-b border-slate-300 bg-slate-50 text-slate-700">
+                    <th className="py-2.5 px-3 font-bold">Item</th>
+                    <th className="py-2.5 px-3 font-bold">Serviço & Especificações</th>
+                    <th className="py-2.5 px-3 font-bold text-center">Qtd</th>
+                    <th className="py-2.5 px-3 font-bold text-right">Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-200">
+                  {cart.map((item, idx) => (
+                    <tr key={idx}>
+                      <td className="py-3 px-3 font-semibold text-slate-900">{idx + 1}</td>
+                      <td className="py-3 px-3">
+                        <div className="font-bold text-slate-900">{item.serviceName}</div>
+                        <div className="text-[11px] text-slate-500">{item.details}</div>
+                      </td>
+                      <td className="py-3 px-3 text-center font-medium text-slate-700">{item.quantity}</td>
+                      <td className="py-3 px-3 text-right font-bold text-slate-900">{formatCurrency(item.totalPrice)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Commercial Adjustments Breakdown */}
+            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8 space-y-2 text-xs">
+              <div className="flex justify-between text-slate-600">
+                <span>Subtotal dos Serviços:</span>
+                <span className="font-semibold text-slate-900">{formatCurrency(proposalTotals.subtotal)}</span>
+              </div>
+
+              {proposalTotals.additions > 0 && (
+                <div className="flex justify-between text-slate-600">
+                  <span>Acréscimos {additionReason ? `(${additionReason})` : ''}:</span>
+                  <span className="font-semibold text-slate-900">+{formatCurrency(proposalTotals.additions)}</span>
+                </div>
+              )}
+
+              {proposalTotals.discount > 0 && (
+                <div className="flex justify-between text-emerald-700">
+                  <span>Desconto Aplicado {discountReason ? `(${discountReason})` : ''}:</span>
+                  <span className="font-semibold text-emerald-700">-{formatCurrency(proposalTotals.discount)}</span>
+                </div>
+              )}
+
+              {proposalTotals.feeAmount > 0 && (
+                <div className="flex justify-between text-slate-600">
+                  <span>Taxas de Processamento ({proposalTotals.activePayment.name}):</span>
+                  <span className="font-semibold text-slate-900">+{formatCurrency(proposalTotals.feeAmount)}</span>
+                </div>
+              )}
+
+              <div className="flex justify-between items-center pt-3 mt-2 border-t border-slate-300 text-sm">
+                <span className="font-black text-slate-950">INVESTIMENTO TOTAL:</span>
+                <span className="text-xl font-black text-purple-700">{formatCurrency(proposalTotals.totalFinal)}</span>
+              </div>
+            </div>
+
+            {/* Payment & PIX Info */}
+            <div className="bg-purple-50 p-6 rounded-xl border border-purple-200 mb-6 text-xs text-slate-800 space-y-2">
+              <div className="font-bold text-purple-900">Condições & Dados para Pagamento:</div>
+              <div><b>Forma Escolhida:</b> {proposalTotals.activePayment.name} {installments > 1 ? `(${installments}x de ${formatCurrency(proposalTotals.installmentVal)})` : ''}</div>
+              <div><b>Chave PIX (Aleatória):</b> <code className="bg-white px-2 py-0.5 rounded border border-purple-200 font-mono text-purple-900">83664d59-36a5-46ae-a2e6-768ad1e6db6a</code></div>
+              <div><b>Titular:</b> Matheus Victor / VICCS Design</div>
+            </div>
+
+            {observations && (
+              <div className="text-xs text-slate-600 border-t border-slate-200 pt-4">
+                <b>Observações:</b> {observations}
+              </div>
+            )}
+          </div>
+
+        </div>
+      );
+    }
+
+    ReactDOM.render(<App />, document.getElementById('root'));
+  </script>
+</body>
+
+</html>

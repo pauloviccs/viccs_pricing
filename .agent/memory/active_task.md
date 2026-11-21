@@ -1,32 +1,26 @@
-# Active Task — Expansão VICCS Pricing
+# Active Task — Overhaul Visual com Identidade de Marca (IDV)
 
 ## Objetivo
+Atualizar o front-end com a identidade visual oficial da marca VICCS Design (assets da pasta `.agent/assets/logo`), migrando do tema genérico roxo para a paleta oficial Crimson & Wine (`#a32b2b`, `#5a1515`, `#262e2f`), garantindo layout responsivo em todos os dispositivos (mobile iOS/Android, tablets e desktop), sem quebrar funcionalidades de back-end (Supabase) ou duplicar elementos de marca.
 
-Aplicar todas as expansões definidas no arquivo de contexto `viccs-pricing-pro-context.md` ao `index.html`.
-
-## Escopo da Implementação
-
-### ✅ Itens do Checklist (Seção 11 do contexto)
-
-1. [x] Novos serviços no `BASE_SERVICES` (estampas, artes por metro, manutenção menu boards, outros de manutenção)
-2. [x] Filtro de tabs por categoria na Seção 1
-3. [x] Criar `PAYMENT_METHODS` + estado `paymentMethod` e `installments`
-4. [x] Adicionar Seção 5 — Forma de Pagamento na interface
-5. [x] Adaptar `calculationDetails` com `paymentFee`, `grandTotal`, `installmentValue`
-6. [x] Adaptar painel Resumo para exibir taxa de pagamento e valor de parcela
-7. [x] Adaptar `handleCopyProposal` com forma de pagamento
-8. [x] Lógica de campo de dimensão (m²) para serviços `impressao`
-9. [x] Campo `observacoes` de texto livre
-10. [x] Persistência via `localStorage` + `useEffect`
-
-### 🔧 Melhorias Extras Sugeridas pelo Agente
-
-11. [x] Migrar `document.execCommand('copy')` → `navigator.clipboard.writeText()` com fallback
-2. [x] Indicador de categoria no card do serviço (badge colorido)
-3. [x] Slider condicional de parcelas (só aparece quando cartão parcelado)
-4. [x] Seção de permuta com campo de texto descritivo
+## Escopo Realizado
+1. [x] **Inspeção de Assets Oficiais:** Análise das cores e vetores em `.agent/assets/logo/` (`VICCS_ColorsLOGO.svg`, `VICCS_Design_Icon_BWR.svg`, `VICCS_Design_Logo_txt.svg`, `VICCS_Design_Logo_txt_WHITE.svg`, `VICCS_Design_Isotipo_WHITE.svg`).
+2. [x] **Configuração de Cores & Tokens no Tailwind:**
+   - Adicionada a paleta oficial: Crimson (`#a32b2b`), Deep Wine (`#5a1515`), Dark Maroon (`#4e1617`), Gunmetal Charcoal (`#262e2f`) e Titanium Slate (`#2d3636`).
+   - Sombras luminosas atualizadas para `shadow-glow-crimson` e `shadow-glow-wine`.
+3. [x] **Identidade Visual no Header e Auth (Sem Duplicações):**
+   - Header com `VICCS_Design_Icon_BWR.svg` de alta definição e badge `PRO` em vidro crimson.
+   - Login com hero icon `VICCS_Design_Icon_BWR.svg` (80px), iluminação carmesim difusa e botão de entrada em gradiente de marca.
+4. [x] **Overhaul de Estados Visuais:**
+   - Abas de categorias, cartões selecionados, barras verticais ativas, seletores de complexidade, sliders, toggles e botões primários convertidos para a paleta Crimson & Wine.
+5. [x] **Mobile & Tablet Optimization:**
+   - Adicionada barra flutuante mobile fixa no rodapé para telas `< lg` com atalho direto para o carrinho e adição rápida.
+   - Drawer responsivo de carrinho mobile para visualização instantânea de itens em smartphones.
+6. [x] **Exportação de PDF com Vetor Oficial:**
+   - Cabeçalho do PDF atualizado com o logotipo horizontal oficial `VICCS_Design_Logo_txt.svg`, eliminando texto duplicado e aplicando acentos carmesim nos totais e dados de PIX.
+7. [x] **Governança & Documentação:**
+   - Atualizados `ui_ux.md`, `PROJECT_STATUS.md`, `README.md`, `todos.md` e `changelog.md`.
 
 ## Status
-
-- **Iniciado:** 2026-06-04
-- **Status:** ✅ Concluído
+- **Data:** 2026-11-21
+- **Status:** ✅ Concluído com Sucesso — Front-end 100% Alinhado à IDV e Responsivo

@@ -1,28 +1,44 @@
 # Changelog
 
-## 2026-08-30 — VICCS Pricing Pro (Supabase Auth, Motion Engine, Multi-Cart & Liquid Glass)
+## 2026-11-21 — Reestruturação da Identidade Visual Oficial nos Orçamentos em PDF
 
-### Novas Features & Módulos
-- **Autenticação Supabase com Restrição Admin:**
-  - Login e Cadastro restritos a E-mail/Senha (sem provedores sociais invasivos).
-  - Tela de espera para usuários pendentes; liberação apenas quando `is_admin = true` no Supabase.
-  - Modo de visualização direta de Administrador para desenvolvimento local ágil.
-- **Engine Paramétrica de Motion Design:**
-  - Slider dinâmico de segundos (5s a 120s+) com precificação escalonada por segundo.
-  - Seletores de estilo & complexidade visual (*Tipografia Cinética / Stories*, *2D Vetorial / Médio*, *Ilustração Complexa / 3D*).
-  - Toggle de *Sound Design & Trilha Sonora* comercial (+R$ 120,00).
-- **Sistema de Carrinho Multi-Itens (Empilhamento de Serviços):**
-  - Permite adicionar múltiplos serviços e pacotes em um único orçamento.
-  - Controles de quantidade (+ / -) e remoção instantânea por item.
-  - Badge de contagem em tempo real no header.
-- **Ajustes Comerciais com Justificativa:**
-  - Inputs para Acréscimos (+R$) e Descontos (-R$) com justificativas textuais impressas na proposta em PDF e no WhatsApp.
-- **Design System Dark Liquid Glass & Vetores SVG:**
-  - Interface baseada nas referências visuais oficiais (Workly, SmartShort e Liquid Glass Card).
-  - Fundo escuro profundo `#070709` com painéis foscos `backdrop-blur-2xl bg-[rgba(16,16,24,0.70)]` e reflexos de luz superiores `border-t-white/18`.
-  - Remoção de emojis amadores, substituídos por ícones vetoriais SVG de traço fino (Lucide/Heroicons).
-- **Persistência no Supabase & Histórico de Propostas:**
-  - Gravação relacional nas tabelas `proposals` e `proposal_items`.
-  - Drawer lateral para busca e reabertura de orçamentos antigos no editor.
-- **Exportação Otimizada de PDF Multipágina:**
-  - Renderização contínua com quebra de página inteligente, tabela de escopo e dados PIX automáticos.
+### Identidade Visual & Engenharia de Propostas (PDF)
+- **Implementação do Padrão Executivo de Papel Timbrado:**
+  - **Faixas Tricolores Oficiais:** Adicionada barra decorativa no topo e na base do PDF com a proporção cromática exata da VICCS: Carmim (`#a32b2b`), Vinho Nobre (`#5a1515`) e Gunmetal Charcoal (`#262e2f`).
+  - **Isótipo Oficial Integrado (`VICCS_Design_Isotipo.svg`):** Integrado em cores reais no card de identificação da proposta no cabeçalho e no selo do rodapé.
+  - **Marca D'Água Sutil (Watermark):** Aplicação do Isótipo em escala generosa no fundo do documento com rotação de -4° e opacidade ultra suave (3.5%), garantindo aspecto premium sem prejudicar legibilidade.
+  - **Logo Tipográfica Oficial (`VICCS_Design_Logo_txt.svg`):** Exibição da tipografia corporativa no cabeçalho acompanhada do slogan institucional e da régua gráfica de 5 cores (`#a32b2b`, `#5a1515`, `#4e1617`, `#262e2f`, `#2d3636`).
+  - **Tabela de Escopo com Identidade:** Cabeçalho com fundo Gunmetal Charcoal (`#262e2f`), texto branco, linhas zebradas suaves e badges de categoria em Carmim suave.
+  - **Blocos Comerciais & PIX:** Caixa de pagamento em tom Carmim suave com chave PIX em destaque e discriminação detalhada de subtotal, acréscimos, descontos e total.
+- **Auditoria de Execução:** Validação via `html2canvas` + `jsPDF` com zero erros no console do navegador.
+
+---
+
+## 2026-11-21 — Overhaul Visual com Identidade Oficial da Marca (Crimson & Wine IDV)
+
+### Identidade Visual & Design System
+- **Paleta Oficial da Marca Injetada:** Substituição completa do padrão roxo genérico pelas cores reais extraídas de `.agent/assets/logo/`:
+  - Crimson Oficial (`#a32b2b`), Deep Wine (`#5a1515`), Dark Maroon (`#4e1617`), Gunmetal Charcoal (`#262e2f`) e Titanium Slate (`#2d3636`).
+  - Novos tokens de iluminação: `shadow-glow-crimson` e `shadow-glow-wine`.
+- **Logotipos Vetoriais Oficiais Integrados (Sem Duplicações):**
+  - **Header Navbar:** Inserido o ícone vetorial `VICCS_Design_Icon_BWR.svg` de alta nitidez com badge `PRO` em vidro crimson.
+  - **Tela de Autenticação / Login:** Hero badge com `VICCS_Design_Icon_BWR.svg` com luz difusa carmesim e botão primário em degradê de marca.
+  - **PDF Comercial (A4):** Cabeçalho profissional renderizando o logotipo horizontal oficial `VICCS_Design_Logo_txt.svg` em 300 DPI, eliminando duplicação de texto e acentuando valores e caixa de PIX nas cores da marca.
+- **Experiência Mobile & Responsividade (iOS / Android / Tablets):**
+  - **Barra Flutuante Inferior Mobile:** Componente fixo em telas menores exibindo o valor total e botões de ação rápida ("Adicionar" e "Ver Carrinho").
+  - **Drawer de Carrinho Mobile:** Gaveta deslizante lateral acionada ao tocar no botão de carrinho em smartphones e tablets.
+- **Governânça Atualizada:** Arquivos `ui_ux.md`, `PROJECT_STATUS.md`, `README.md` e `active_task.md` sincronizados.
+
+---
+
+## 2026-11-21 — Adição de 15 Novos Serviços (Gráfica, Web Dev & Software)
+
+### Expansão de Catálogo
+- **3 Novas Categorias:** `grafica`, `webdev` e `software`.
+- **15 Novos Serviços Inseridos:** Totalizando 34 serviços no catálogo em 11 categorias.
+- **Iconografia SVG:** Adicionados ícones vetoriais dedicados para `code`, `terminal` e `globe`.
+
+---
+
+## 2026-11-21 — Sincronização Holística de Visão Geral & Memória (.agent Cortex)
+- Criação do `README.md`, atualização de `PROJECT_STATUS.md`, `architecture.md`, `stack.md`, `code_style.md` e `todos.md`.

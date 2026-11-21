@@ -6,12 +6,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>VICCS Pricing Pro — Gestão & Engenharia de Propostas</title>
 
-  <!-- Favicons -->
-  <link rel="icon" type="image/x-icon" href=".agent/media/favicon/favicon.ico">
-  <link rel="icon" type="image/png" sizes="32x32" href=".agent/media/favicon/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href=".agent/media/favicon/favicon-16x16.png">
+  <!-- Favicons (Brand Vector SVG & Fallbacks) -->
+  <link rel="icon" type="image/svg+xml" href=".agent/assets/logo/VICCS_Design_Icon_BWR.svg">
+  <link rel="alternate icon" type="image/x-icon" href=".agent/media/favicon/favicon.ico">
   <link rel="apple-touch-icon" sizes="180x180" href=".agent/media/favicon/apple-touch-icon.png">
-  <link rel="manifest" href=".agent/media/favicon/site.webmanifest">
+  <meta name="theme-color" content="#08090b">
 
   <!-- Tailwind CSS v3 -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -22,34 +21,47 @@
         extend: {
           colors: {
             brand: {
-              50: '#faf5ff',
-              100: '#f3e8ff',
-              200: '#e9d5ff',
-              300: '#d8b4fe',
-              400: '#c084fc',
-              500: '#a855f7',
-              600: '#9333ea',
-              700: '#7e22ce',
-              800: '#6b21a8',
-              900: '#581c87',
-              950: '#3b0764',
+              50: '#fdf2f2',
+              100: '#fde8e8',
+              200: '#fbd5d5',
+              300: '#f8b4b4',
+              400: '#f07171',
+              500: '#a32b2b', // Crimson Oficial VICCS
+              600: '#852323',
+              700: '#5a1515', // Deep Wine Oficial VICCS
+              800: '#4e1617', // Dark Maroon Oficial VICCS
+              900: '#340f10',
+              950: '#1e0809',
+            },
+            crimson: {
+              DEFAULT: '#a32b2b',
+              light: '#c23b3b',
+              glow: 'rgba(163, 43, 43, 0.45)',
+            },
+            wine: {
+              DEFAULT: '#5a1515',
+              dark: '#4e1617',
+              charcoal: '#262e2f',
+              titanium: '#2d3636',
             },
             surface: {
-              base: '#070709',
-              card: 'rgba(16, 16, 24, 0.72)',
-              cardHover: 'rgba(24, 24, 36, 0.85)',
+              base: '#08090b',
+              card: 'rgba(18, 20, 25, 0.75)',
+              cardHover: 'rgba(28, 30, 38, 0.88)',
               border: 'rgba(255, 255, 255, 0.08)',
               borderHighlight: 'rgba(255, 255, 255, 0.18)',
+              crimsonHighlight: 'rgba(163, 43, 43, 0.40)',
             }
           },
           fontFamily: {
             sans: ['Inter', 'sans-serif'],
           },
           boxShadow: {
-            'glow-purple': '0 0 25px -3px rgba(168, 85, 247, 0.35)',
-            'glow-pink': '0 0 25px -3px rgba(244, 63, 94, 0.4)',
-            'glow-cyan': '0 0 25px -3px rgba(6, 182, 212, 0.35)',
-            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.5)',
+            'glow-crimson': '0 0 25px -3px rgba(163, 43, 43, 0.45)',
+            'glow-wine': '0 0 25px -3px rgba(90, 21, 21, 0.50)',
+            'glow-purple': '0 0 25px -3px rgba(163, 43, 43, 0.45)', // Compatibilidade retroativa
+            'glow-pink': '0 0 25px -3px rgba(163, 43, 43, 0.40)',
+            'glass': '0 8px 32px 0 rgba(0, 0, 0, 0.55)',
           }
         }
       }
@@ -80,7 +92,7 @@
       border-radius: 9999px;
     }
     ::-webkit-scrollbar-thumb:hover {
-      background: #a855f7;
+      background: #a32b2b;
     }
 
     /* Liquid Glass Effects */
@@ -98,8 +110,8 @@
       transition: all 0.2s ease;
     }
     .liquid-glass-input:focus {
-      border-color: rgba(168, 85, 247, 0.6);
-      box-shadow: 0 0 15px rgba(168, 85, 247, 0.25);
+      border-color: rgba(163, 43, 43, 0.70);
+      box-shadow: 0 0 15px rgba(163, 43, 43, 0.30);
     }
 
     @keyframes pulseGlow {
@@ -126,11 +138,23 @@
   <script src="https://unpkg.com/@babel/standalone@7.26.2/babel.min.js"></script>
 </head>
 
-<body class="bg-[#070709] text-slate-100 min-h-screen selection:bg-purple-500/30">
+<body class="bg-[#070709] text-slate-100 min-h-screen selection:bg-[#a32b2b]/40">
   <div id="root"></div>
 
   <script type="text/babel">
     const { useState, useEffect, useMemo, useRef } = React;
+
+    // --- OFFICIAL BRAND ASSETS (VICCS Design Identity) ---
+    const BRAND_ASSETS = {
+      iconBWR: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FtYWRhXzIiIGRhdGEtbmFtZT0iQ2FtYWRhIDIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHZpZXdCb3g9IjAgMCA3MTcuMDkgNzE3LjA5Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiB1cmwoI0dyYWRpZW50ZV9zZW1fbm9tZV85KTsKICAgICAgfQoKICAgICAgLmNscy0yIHsKICAgICAgICBmaWxsOiAjZmZmOwogICAgICB9CgogICAgICAuY2xzLTMgewogICAgICAgIGZpbGw6ICNhMzJiMmI7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgICA8bGluZWFyR3JhZGllbnQgaWQ9IkdyYWRpZW50ZV9zZW1fbm9tZV85IiBkYXRhLW5hbWU9IkdyYWRpZW50ZSBzZW0gbm9tZSA5IiB4MT0iMTY1LjUyIiB5MT0iMTcyLjcyIiB4Mj0iNjUxLjEyIiB5Mj0iNjQwLjIxIiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CiAgICAgIDxzdG9wIG9mZnNldD0iMCIgc3RvcC1jb2xvcj0iIzMzMyIvPgogICAgICA8c3RvcCBvZmZzZXQ9Ii44NCIgc3RvcC1jb2xvcj0iIzFhMWExYSIvPgogICAgPC9saW5lYXJHcmFkaWVudD4KICA8L2RlZnM+CiAgPGcgaWQ9IlZJQ0NTX0Rlc2lnbl9fMjAyN19Mb2dvIiBkYXRhLW5hbWU9IlZJQ0NTX0Rlc2lnbiBfMjAyN19Mb2dvIj4KICAgIDxnPgogICAgICA8cmVjdCBjbGFzcz0iY2xzLTEiIHdpZHRoPSI3MTcuMDkiIGhlaWdodD0iNzE3LjA5IiByeD0iMTA0LjU3IiByeT0iMTA0LjU3Ii8+CiAgICAgIDxnPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTc0LjUsMTY3Ljc2aDE3MS45MnY2LjIyYy0xLjk1LS43Ny0xMC43MS00LTIwLjQ4LDAtMTAuMDQsNC4xMS0xMy45NSwxMi45LTE1LDE1LjM2LTMuNjYsOC42MS0yLjExLDE2LjM4LTEuNDYsMTkuMDIsMzkuNDYsOTEuMjcsNzguOTIsMTgyLjU1LDExOC4zOCwyNzMuODIsMS4yNyw0LjkzLDIuNTMsOS44NiwzLjgsMTQuNzlsLTMxLjA5LDQ3LjU1LTguMDUsNC4wMkwxNDMuNjMsMjIxLjUzYy0yLjM5LTYuNTMtNy4wNC0xNi40Ny0xNi4wOS0yNS45Ny0zLjg5LTQuMDgtMTIuODEtMTMuMjItMjcuOC0xOC4yOS0xMC41LTMuNTUtMTkuNjgtMy42NS0yNS4yNC0zLjI5di02LjIyWiIvPgogICAgICAgIDxnPgogICAgICAgICAgPHBhdGggY2xhc3M9ImNscy0zIiBkPSJNMzM2LjA0LDQ4OS4zYzcuNzctNTcuNzgsMjEuODEtOTQuMDMsMzMuODYtMTE2Ljk3LDEwLjMtMTkuNiwxNi4wMy0zMi42NywyNy40OS01OC43OSw3LjU1LTE3LjIxLDExLjYxLTI3LjQ1LDE0LjI4LTQxLjAyLDMuNjctMTguNjIsMi45OC0zNC41NSwxLjc2LTQ1LjI5LDUuNjksMTUuMjksMTIuNzQsMzkuNzUsMTIuNzUsNzAuMzYuMDIsMzYtOS43LDYyLjU1LTE0Ljk1LDc2LjUxLTEwLjQ0LDI3Ljc0LTIzLjQ1LDQ2LjQtNDAuNDUsNzAuOC0xMy4yNCwxOS0yNS41OSwzMy45Ni0zNC43NCw0NC40MVoiLz4KICAgICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMyIgZD0iTTM3Mi4wOSwyNzcuMjJjMi4xNi04LjYzLDQuMTktMjEuNjIsMS45OS0zNy4wNC0xLjEyLTcuODQtMy4xLTIwLjY5LTEyLjA3LTM0LjM5LTkuNC0xNC4zNS0yMS4yNi0yMS41OC0yNS4xMy0yMy43OC0xOC44OS0xMC43Ni0zNy4yOC05Ljg3LTQ0LjM3LTkuMTR2LTUuMTJjMzMuNDcuMjcsNjYuOTQuNTUsMTAwLjQxLjgyLDI4LjkzLjM2LDU3Ljg2LjcyLDg2Ljc5LDEuMDgsMjIuMiwyLjQ3LDM5Ljg4LDguMTksNTIuMDMsMTMuMSwyMS4zMSw4LjYxLDM1LjQ2LDE4LjcyLDM4LjQxLDIwLjg1LDE3Ljg0LDEyLjkzLDI5LjM0LDI2LjYxLDM1LjQ4LDM0Ljc1LDMuNDgsNC42MiwxMS42MywxNS45MywxOS4wMiwzMi4xOSw3LjM1LDE2LjE4LDEwLjM1LDI5LjM0LDEyLjQ0LDM4Ljc4LDUuNzEsMjUuNzUsNS41Niw0Ni4wNSw1LjQ5LDUwLjg1LS40NCwyOC4xMy02LjUxLDQ5LjQxLTkuMTQsNTcuOC04LjY0LDI3LjQ5LTIxLjA5LDQ2LjItMjUuNjEsNTIuNjgtMTMuNDcsMTkuMy0yNy4xNSwzMS4wOC0zMS4wOSwzNC4zOS0zLjcxLDMuMTEtMTYuNTEsMTMuNTgtMzUuODUsMjMuMDUtMy44NCwxLjg4LTIxLjQxLDEwLjMyLTQ3LjE5LDE1LjczLTE0Ljc5LDMuMTEtMjUuNjIsMy44MS00MC45Nyw0Ljc2LTI1LjI4LDEuNTUtMzcuOTYuMzQtNzcuOTEsMC0xNS44OC0uMTMtMjguNzgtLjA3LTM2Ljk0LDBsMjEuMjItMjkuMjZjNi4yNywzLjU0LDE0Ljc2LDcuNzQsMjUuMjQsMTEuMzQsNi40NiwyLjIyLDE5LjQ4LDYuMiwzNi41OCw3LjY4LDcuNjQuNjYsMjAuMTIsMS42NiwzNi4yMS0xLjEsNi45OS0xLjIsMjAuNDMtNC4xLDM1Ljg1LTExLjcxLDUuODMtMi44OCwxOS4xNS05Ljk5LDMyLjkyLTIzLjA1LDE4LjI0LTE3LjMsMjYuOC0zNS4xLDM0LjAyLTUwLjQ4LDMuNzMtNy45NSwxMy42My0zMC4zMiwxOC4yOS02MS40NSw0LjI0LTI4LjMxLDIuMDktNTAuMTMuMzctNjYuNTgtMS42MS0xNS4zNC0zLjk4LTM2LjU3LTEzLjUzLTYyLjU1LTYuODgtMTguNzItMTIuODctMzUuMDEtMjguNTMtNTAuODUtMi43OC0yLjgxLTE0Ljg3LTE0LjcxLTM0LjM4LTIzLjQxLTguMDktMy42MS0xNy4zMy03LjYzLTMwLjM2LTguNDEtNi44My0uNDEtMTguMjctLjE1LTMxLjA5LDQuNzYtMTIuNTcsNC44MS0yMC40MywxMS43OC0yNS42MSwxNi40Ni0xNC40NywxMy4wOC0yMS4zLDI3LjEyLTI1Ljk3LDM2Ljk1LTQuMjcsOC45OS05LjYyLDIyLjcyLTEyLjI1LDQwLjUxLTEuNTgtLjA2LTMuMTUtLjEyLTQuNzMtLjE4WiIvPgogICAgICAgIDwvZz4KICAgICAgPC9nPgogICAgPC9nPgogIDwvZz4KPC9zdmc+",
+      iconWR: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FtYWRhXzIiIGRhdGEtbmFtZT0iQ2FtYWRhIDIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgeG1sbnM6eGxpbms9Imh0dHA6Ly93d3cudzMub3JnLzE5OTkveGxpbmsiIHZpZXdCb3g9IjAgMCA3MTcuMDkgNzE3LjA5Ij4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjNWExNTE1OwogICAgICB9CgogICAgICAuY2xzLTIgewogICAgICAgIGZpbGw6IHVybCgjR3JhZGllbnRlX3NlbV9ub21lXzExKTsKICAgICAgfQoKICAgICAgLmNscy0zIHsKICAgICAgICBmaWx0ZXI6IHVybCgjZHJvcC1zaGFkb3ctMSk7CiAgICAgIH0KCiAgICAgIC5jbHMtNCB7CiAgICAgICAgZmlsbDogIzJkMzYzNjsKICAgICAgfQogICAgPC9zdHlsZT4KICAgIDxmaWx0ZXIgaWQ9ImRyb3Atc2hhZG93LTEiIHg9Ii02MC43NCIgeT0iLTUwLjIxIiB3aWR0aD0iOTU4IiBoZWlnaHQ9Ijk1OCIgZmlsdGVyVW5pdHM9InVzZXJTcGFjZU9uVXNlIj4KICAgICAgPGZlT2Zmc2V0IGR4PSI2MCIgZHk9IjcwIi8+CiAgICAgIDxmZUdhdXNzaWFuQmx1ciByZXN1bHQ9ImJsdXIiIHN0ZERldmlhdGlvbj0iNDAiLz4KICAgICAgPGZlRmxvb2QgZmxvb2QtY29sb3I9IiMwMDAiIGZsb29kLW9wYWNpdHk9Ii42Ii8+CiAgICAgIDxmZUNvbXBvc2l0ZSBpbjI9ImJsdXIiIG9wZXJhdG9yPSJpbiIvPgogICAgICA8ZmVDb21wb3NpdGUgaW49IlNvdXJjZUdyYXBoaWMiLz4KICAgIDwvZmlsdGVyPgogICAgPGxpbmVhckdyYWRpZW50IGlkPSJHcmFkaWVudGVfc2VtX25vbWVfMTEiIGRhdGEtbmFtZT0iR3JhZGllbnRlIHNlbSBub21lIDExIiB4MT0iLTMwOC4zNSIgeTE9Ii00OS43OSIgeDI9IjY2OS4yOCIgeTI9IjU0OC44MSIgZ3JhZGllbnRVbml0cz0idXNlclNwYWNlT25Vc2UiPgogICAgICA8c3RvcCBvZmZzZXQ9IjAiIHN0b3AtY29sb3I9IiNlNmU2ZTYiLz4KICAgICAgPHN0b3Agb2Zmc2V0PSIuODQiIHN0b3AtY29sb3I9IiNmMmYyZjIiLz4KICAgIDwvbGluZWFyR3JhZGllbnQ+CiAgPC9kZWZzPgogIDxnIGlkPSJWSUNDU19EZXNpZ25fXzIwMjdfTG9nbyIgZGF0YS1uYW1lPSJWSUNDU19EZXNpZ24gXzIwMjdfTG9nbyI+CiAgICA8ZyBjbGFzcz0iY2xzLTMiPgogICAgICA8cmVjdCBjbGFzcz0iY2xzLTIiIHdpZHRoPSI3MTcuMDkiIGhlaWdodD0iNzE3LjA5IiByeD0iMTA0LjU3IiByeT0iMTA0LjU3Ii8+CiAgICAgIDxnPgogICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtNCIgZD0iTTc0LjUsMTY3Ljc2aDE3MS45MnY2LjIyYy0xLjk1LS43Ny0xMC43MS00LTIwLjQ4LDAtMTAuMDQsNC4xMS0xMy45NSwxMi45LTE1LDE1LjM2LTMuNjYsOC42MS0yLjExLDE2LjM4LTEuNDYsMTkuMDIsMzkuNDYsOTEuMjcsNzguOTIsMTgyLjU1LDExOC4zOCwyNzMuODIsMS4yNyw0LjkzLDIuNTMsOS44NiwzLjgsMTQuNzlsLTMxLjA5LDQ3LjU1LTguMDUsNC4wMkwxNDMuNjMsMjIxLjUzYy0yLjM5LTYuNTMtNy4wNC0xNi40Ny0xNi4wOS0yNS45Ny0zLjg5LTQuMDgtMTIuODEtMTMuMjItMjcuOC0xOC4yOS0xMC41LTMuNTUtMTkuNjgtMy42NS0yNS4yNC0zLjI5di02LjIyWiIvPgogICAgICAgIDxnPgogICAgICAgICAgPHBhdGggY2xhc3M9ImNscy0xIiBkPSJNMzM2LjA0LDQ4OS4zYzcuNzctNTcuNzgsMjEuODEtOTQuMDMsMzMuODYtMTE2Ljk3LDEwLjMtMTkuNiwxNi4wMy0zMi42NywyNy40OS01OC43OSw3LjU1LTE3LjIxLDExLjYxLTI3LjQ1LDE0LjI4LTQxLjAyLDMuNjctMTguNjIsMi45OC0zNC41NSwxLjc2LTQ1LjI5LDUuNjksMTUuMjksMTIuNzQsMzkuNzUsMTIuNzUsNzAuMzYuMDIsMzYtOS43LDYyLjU1LTE0Ljk1LDc2LjUxLTEwLjQ0LDI3Ljc0LTIzLjQ1LDQ2LjQtNDAuNDUsNzAuOC0xMy4yNCwxOS0yNS41OSwzMy45Ni0zNC43NCw0NC40MVoiLz4KICAgICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTM3Mi4wOSwyNzcuMjJjMi4xNi04LjYzLDQuMTktMjEuNjIsMS45OS0zNy4wNC0xLjEyLTcuODQtMy4xLTIwLjY5LTEyLjA3LTM0LjM5LTkuNC0xNC4zNS0yMS4yNi0yMS41OC0yNS4xMy0yMy43OC0xOC44OS0xMC43Ni0zNy4yOC05Ljg3LTQ0LjM3LTkuMTR2LTUuMTJjMzMuNDcuMjcsNjYuOTQuNTUsMTAwLjQxLjgyLDI4LjkzLjM2LDU3Ljg2LjcyLDg2Ljc5LDEuMDgsMjIuMiwyLjQ3LDM5Ljg4LDguMTksNTIuMDMsMTMuMSwyMS4zMSw4LjYxLDM1LjQ2LDE4LjcyLDM4LjQxLDIwLjg1LDE3Ljg0LDEyLjkzLDI5LjM0LDI2LjYxLDM1LjQ4LDM0Ljc1LDMuNDgsNC42MiwxMS42MywxNS45MywxOS4wMiwzMi4xOSw3LjM1LDE2LjE4LDEwLjM1LDI5LjM0LDEyLjQ0LDM4Ljc4LDUuNzEsMjUuNzUsNS41Niw0Ni4wNSw1LjQ5LDUwLjg1LS40NCwyOC4xMy02LjUxLDQ5LjQxLTkuMTQsNTcuOC04LjY0LDI3LjQ5LTIxLjA5LDQ2LjItMjUuNjEsNTIuNjgtMTMuNDcsMTkuMy0yNy4xNSwzMS4wOC0zMS4wOSwzNC4zOS0zLjcxLDMuMTEtMTYuNTEsMTMuNTgtMzUuODUsMjMuMDUtMy44NCwxLjg4LTIxLjQxLDEwLjMyLTQ3LjE5LDE1LjczLTE0Ljc5LDMuMTEtMjUuNjIsMy44MS00MC45Nyw0Ljc2LTI1LjI4LDEuNTUtMzcuOTYuMzQtNzcuOTEsMC0xNS44OC0uMTMtMjguNzgtLjA3LTM2Ljk0LDBsMjEuMjItMjkuMjZjNi4yNywzLjU0LDE0Ljc2LDcuNzQsMjUuMjQsMTEuMzQsNi40NiwyLjIyLDE5LjQ4LDYuMiwzNi41OCw3LjY4LDcuNjQuNjYsMjAuMTIsMS42NiwzNi4yMS0xLjEsNi45OS0xLjIsMjAuNDMtNC4xLDM1Ljg1LTExLjcxLDUuODMtMi44OCwxOS4xNS05Ljk5LDMyLjkyLTIzLjA1LDE4LjI0LTE3LjMsMjYuOC0zNS4xLDM0LjAyLTUwLjQ4LDMuNzMtNy45NSwxMy42My0zMC4zMiwxOC4yOS02MS40NSw0LjI0LTI4LjMxLDIuMDktNTAuMTMuMzctNjYuNTgtMS42MS0xNS4zNC0zLjk4LTM2LjU3LTEzLjUzLTYyLjU1LTYuODgtMTguNzItMTIuODctMzUuMDEtMjguNTMtNTAuODUtMi43OC0yLjgxLTE0Ljg3LTE0LjcxLTM0LjM4LTIzLjQxLTguMDktMy42MS0xNy4zMy03LjYzLTMwLjM2LTguNDEtNi44My0uNDEtMTguMjctLjE1LTMxLjA5LDQuNzYtMTIuNTcsNC44MS0yMC40MywxMS43OC0yNS42MSwxNi40Ni0xNC40NywxMy4wOC0yMS4zLDI3LjEyLTI1Ljk3LDM2Ljk1LTQuMjcsOC45OS05LjYyLDIyLjcyLTEyLjI1LDQwLjUxLTEuNTgtLjA2LTMuMTUtLjEyLTQuNzMtLjE4WiIvPgogICAgICAgIDwvZz4KICAgICAgPC9nPgogICAgPC9nPgogIDwvZz4KPC9zdmc+",
+      logoTxtDark: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FtYWRhXzIiIGRhdGEtbmFtZT0iQ2FtYWRhIDIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDE0MzYuNTUgMzk3LjEyIj4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLmNscy0xIHsKICAgICAgICBmaWxsOiAjNWExNTE1OwogICAgICB9CgogICAgICAuY2xzLTIgewogICAgICAgIGZpbGw6ICMyNjJlMmY7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxnIGlkPSJWSUNDU19EZXNpZ25fXzIwMjdfTG9nbyIgZGF0YS1uYW1lPSJWSUNDU19EZXNpZ24gXzIwMjdfTG9nbyI+CiAgICA8ZyBpZD0iTG9nb3MiPgogICAgICA8ZyBpZD0iVklDQ1NfQnJhbmRfQ29sb3IiPgogICAgICAgIDxnPgogICAgICAgICAgPGc+CiAgICAgICAgICAgIDxnPgogICAgICAgICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTE0MzQuMTksMjQxLjMzYy0xOS4zLDg1LjAyLTE1Mi44NSw2OC40OC0yMTIuNjksNDMuMDF2LTgwLjczYzEyLjE1LDE2LjEzLDE4LjA0LDM0LjY0LDMxLjEyLDUwLjY1LDI1LjQ5LDMxLjE0LDcwLjc1LDU4LjE2LDExMS43Myw0MS40NSwyNC45MS0xMC4xNSwzNy43Ny0zNS4xLDI5Ljk2LTYxLTIxLTY5LjcyLTE4NC43Mi02MC4zLTE3Mi41OS0xNjQuNDMsOS45Mi04NC45NiwxMzcuMjYtNzUuNjYsMTk2LjQ2LTU5LjIydjY2LjI0Yy01LjQ3Ljk5LTMuMjEtLjg3LTQuMzEtMi45Ni0xOC44Ni0zNS44Mi00Ny4xOS02NS4yOS05MC4xMy02OS4yNC01Ny4wOS01LjI2LTg5LjE0LDUyLjMyLTQ0LjA4LDg5LjY0LDUwLjIzLDQxLjYsMTc1LjU1LDUzLjg4LDE1NC41MywxNDYuNloiLz4KICAgICAgICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0xMTQ2Ljk2LDI0OS4xM2wtLjQxLDE4LjIyYy0yNS41NSwxNS43NC01NS42OCwyOS4wOS04NS43NCwzMy4zLTIzNC43OSwzMi43Ni0yNjAuOTItMzE4LjYxLDguNTEtMjk5LjkzLDIyLjgyLDEuNTcsNTIuNzYsNy4wNCw3My41MywxNS41MXY2My4xM2MtNC44OSwxLjAxLTMuMzMtLjYtNC42NC0yLjY3LTIuNTEtMy44OS00LjA0LTkuMzgtNi45Mi0xMy43My01Ny40OC04Ny4wNy0xNzkuNDItNzIuMjktMjAwLjczLDM0Ljk3LTI3LjIzLDEzNi45MSw5Ny45LDI0MC41NCwyMTYuNCwxNTEuMloiLz4KICAgICAgICAgICAgPC9nPgogICAgICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTEiIGQ9Ik04MTcuNzksMjY0LjY4Yy0xLjA2LDUuNjMtMjUuMTQsMTcuMS0zMS43NCwyMC01NC44NSwyNC4yNS0xMjMuMjYsMjQuNy0xNzQuMy04LjU5LTkyLjA4LTYwLjA1LTgzLjExLTE5OC43NiwxMC4wNC0yNTIuOTcsNTcuODUtMzMuNjcsMTI5LjUtMjMuOTYsMTkxLjg2LTEwdjY2LjI0bC0yMS43Mi0zMy4xNWMtNjQuNjQtNjUuOTEtMTYzLjQxLTQ5LjgyLTE4Ny4yMyw0NC43LTI4LjIyLDExMS45OCw1NS41MSwyMjkuMDcsMTc2LjM1LDE4MC41LDEzLjgzLTUuNTUsMjMuNTItMTQuNDcsMzYuNzEtMjAuMTktLjM5LDQuMjcuODEsOS4zNi4wMiwxMy40NloiLz4KICAgICAgICAgIDwvZz4KICAgICAgICAgIDxnPgogICAgICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik0zNTEuOTYsNC44NGwtMTguNjYsMTEuMzdjLTU1LjEsODMuNzgtOTIuOTUsMTgwLjI3LTEzNi45MSwyNzAuOTQtMS43LDMuNS02Ljg3LDE2LjgxLTExLjA4LDE1LjgyTDUzLjQyLDQzLjU0Yy02Ljc3LTExLjE0LTEzLjMzLTIwLjEzLTI0LjYyLTI3LjEzTDAsNC44NGgxMzQuNTdsLTE1LjIyLDYuNTJjLTEwLjYyLDYuNDYtMTEuMTQsMTguNDEtNi45OCwyOS4xM2w5Ni43NiwxOTguMjhjMy4wMi0uMjEsMy4xNS0zLjIxLDQuMTYtNS4xNCwyMy41Mi00NS4yMiw1OC45My0xMTguNTgsNzMuOTgtMTY2LjE3LDUuOTItMTguNzYsMTIuMjQtMzkuMzQtNC45Ny01NC4wNmwtMTkuMzgtOC41N2g4OS4wNFoiLz4KICAgICAgICAgICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNDk2Ljg5LDMwMC45aC0xMDkuNzJjMi43NS0uNDIsMTIuODYtMi4yOCwyMC43My0xMS4zNSwzLjc4LTQuMzYsNi4yNi05Ljc1LDcuNDktMTUuMzcsMS4yNi01Ljc1LjU4LTExLjEzLjQtMTYuOS0uNDUtMTMuODUtLjY2LTI3LjY4LS41NS00MS41NC4yMi0yOC4xMSwxLjM3LTU2LjE5LDIuMDMtODQuMjlzLjg2LTU1LjQxLS45NC04My4wNWMtLjAzLS40MS0uMDUtLjgxLS4wOC0xLjIyLS44My0xMi4zOC0yLjM0LTI4Ljg2LTEzLjg3LTM1LjgybC0xNS4yLTYuNTJoMTA5LjcybC0xNS4yMiw2LjUyYy05Ljg2LDUuNzEtMTEuMzksMTUuNDktMTMuNTQsMjUuNzgsMS44NiwzNi42OS40Myw3NC45Mi0uNzksMTEzLjA1LS41OCwxOC4wOC0xLjIyLDM2LjE1LTEuMiw1NC4yMy4wMSwxMC41LjIxLDIxLjAxLjU1LDMxLjUuNCwxMi41My0uMDcsMjUuODIsMi42NSwzOC4xLDEuNTgsNy4xMiw0Ljc1LDE0LjEzLDEwLjI3LDE5LjA1LDUuODQsNS4yMSwxMi42Nyw3LjA2LDE3LjI4LDcuODJaIi8+CiAgICAgICAgICA8L2c+CiAgICAgICAgPC9nPgogICAgICAgIDxnPgogICAgICAgICAgPGc+CiAgICAgICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTQ0Ni4yMSwzNjAuNTFjLTIuMTctMy41Mi01LjItNi4yNi05LjEyLTguMjEtMy45LTEuOTQtOC40MS0yLjkyLTEzLjUxLTIuOTJoLTIxLjMxdjQ2Ljk0aDIxLjMxYzUuMSwwLDkuNjEtLjk3LDEzLjUxLTIuOTIsMy45Mi0xLjk1LDYuOTUtNC42Nyw5LjEyLTguMjEsMi4xOC0zLjUzLDMuMjYtNy42NCwzLjI2LTEyLjMzcy0xLjA4LTguODEtMy4yNi0xMi4zNVpNNDM0LjI5LDM4My40OGMtMi44MSwyLjYxLTYuNTUsMy45Mi0xMS4yMywzLjkyaC05Ljk0di0yOS4xaDkuOTRjNC42OCwwLDguNDIsMS4zMSwxMS4yMywzLjkyLDIuNzgsMi42Miw0LjE4LDYuMTYsNC4xOCwxMC42NHMtMS40LDgtNC4xOCwxMC42MloiLz4KICAgICAgICAgICAgPHBhdGggY2xhc3M9ImNscy0yIiBkPSJNNTA0Ljg5LDM0OS4zOHY4LjcyaDQ2LjA3di04LjcyaC00Ni4wN1pNNTA0Ljg5LDM2OC4zdjguNDRoNDIuMzN2LTguNDRoLTQyLjMzWk01MDQuODksMzg3LjZ2OC43Mmg0Ny4ydi04LjcyaC00Ny4yWiIvPgogICAgICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik02NDguMTgsMzc1LjE0Yy0xLjY0LTEuODQtMy41OS0zLjE4LTUuODctNC4wNC0yLjI4LS44My01LjIxLTEuNjktOC43OC0yLjU0LTMuNDUtLjc1LTYuMDEtMS41Mi03LjY4LTIuMzEtMS42Ny0uNzktMi41MS0xLjk4LTIuNTEtMy41OXMuNzItMi45LDIuMTctMy44OWMxLjQ2LS45OCwzLjctMS40Nyw2Ljc0LTEuNDcsNC4zNCwwLDguNjcsMS4yMywxMy4wMSwzLjY5bDMuMzUtOC4yNWMtMi4xNS0xLjM0LTQuNjQtMi4zOC03LjUxLTMuMDgtMi44NS0uNzItNS43OS0xLjA4LTguNzctMS4wOC00LjMsMC03Ljk0LjY1LTEwLjksMS45NS0yLjk3LDEuMjktNS4yLDMuMDUtNi42OCw1LjI2LTEuNDcsMi4yMS0yLjIxLDQuNjktMi4yMSw3LjQxLDAsMy4xMy44Miw1LjYyLDIuNDQsNy41MSwxLjY0LDEuODcsMy41OSwzLjI1LDUuODcsNC4wOCwyLjI4Ljg2LDUuMjIsMS43MSw4Ljc5LDIuNTYsMi4zMy41Myw0LjE2LDEuMDIsNS41MiwxLjQ4LDEuMzcuNDQsMi41LDEuMDMsMy4zNywxLjc3Ljg2LjczLDEuMzEsMS42NywxLjMxLDIuNzgsMCwxLjUxLS43NCwyLjc0LTIuMjIsMy42Ni0xLjQ3LjktMy43NSwxLjM2LTYuODUsMS4zNi0yLjc3LDAtNS41NC0uNDQtOC4zMS0xLjMzLTIuNzctLjktNS4xNS0yLjA4LTcuMTctMy41NWwtMy42OSw4LjE4YzIuMSwxLjYsNC44OSwyLjkyLDguMzUsMy45MiwzLjQ2LDEsNy4wNSwxLjUsMTAuNzYsMS41LDQuMjksMCw3LjkzLS42NSwxMC45My0xLjk1LDMtMS4yOSw1LjI1LTMuMDUsNi43NC01LjI2LDEuNDktMi4yMSwyLjI1LTQuNjYsMi4yNS03LjMzLDAtMy4xMy0uODItNS42MS0yLjQ1LTcuNDRaIi8+CiAgICAgICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTcyOC4zLDM0OS4zOHY0Ni45NGgxMC44N3YtNDYuOTRoLTEwLjg3WiIvPgogICAgICAgICAgICA8cGF0aCBjbGFzcz0iY2xzLTIiIGQ9Ik04NDguMzEsMzg1Ljg2Yy0yLjUxLDEuMzQtNS4zMywyLjAyLTguNDYsMi4wMi0yLjk1LDAtNS41OC0uNjQtNy44Ny0xLjkyLTIuMzItMS4yOC00LjEtMy4wNS01LjQtNS4zMy0xLjI5LTIuMjgtMS45NS00Ljg3LTEuOTUtNy43N3MuNjYtNS41OCwxLjk1LTcuODZjMS4zLTIuMjcsMy4xLTQuMDUsNS40My01LjI5LDIuMzMtMS4yNSw0Ljk4LTEuODcsNy45OC0xLjg3LDQuNzMsMCw4Ljc4LDEuNzUsMTIuMTQsNS4zbDYuOTctNi40NWMtMi4yOC0yLjY0LTUuMS00LjY0LTguNDUtNi4wMy0zLjM2LTEuMzgtNy4wOC0yLjA4LTExLjItMi4wOC00LjkyLDAtOS4zNCwxLjA1LTEzLjI4LDMuMTEtMy45MywyLjA4LTcsNC45Ny05LjIxLDguNjYtMi4yMiwzLjY5LTMuMzMsNy44NS0zLjMzLDEyLjUxczEuMTEsOC44LDMuMzMsMTIuNDljMi4yMSwzLjY5LDUuMjYsNi41OCw5LjE1LDguNjYsMy44OCwyLjA4LDguMjYsMy4xMSwxMy4xNSwzLjExLDMuMzksMCw2Ljc3LS41LDEwLjExLTEuNTQsMy4zNi0xLjAzLDYuMy0yLjUxLDguODYtNC40MnYtMTkuMDRoLTkuOTJ2MTMuNzRaIi8+CiAgICAgICAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTk0OS43OCwzNDkuMzh2MjguNWwtMjMuMzMtMjguNWgtOC45OHY0Ni45NGgxMC43MnYtMjguNWwyMy40LDI4LjVoOC45MnYtNDYuOTRoLTEwLjczWiIvPgogICAgICAgICAgPC9nPgogICAgICAgICAgPHJlY3QgY2xhc3M9ImNscy0yIiB4PSIxOTQuMSIgeT0iMzcwLjI4IiB3aWR0aD0iMTc2LjM3IiBoZWlnaHQ9IjUuMTMiLz4KICAgICAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMiIgeD0iOTk1LjUyIiB5PSIzNjkuOCIgd2lkdGg9IjE3Ni4zNyIgaGVpZ2h0PSI1LjEzIi8+CiAgICAgICAgPC9nPgogICAgICA8L2c+CiAgICA8L2c+CiAgPC9nPgo8L3N2Zz4=",
+      logoTxtWhite: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FtYWRhXzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgMTQzNi42IDM5Ny4xIj4KICA8IS0tIEdlbmVyYXRvcjogQWRvYmUgSWxsdXN0cmF0b3IgMjkuNS4xLCBTVkcgRXhwb3J0IFBsdWctSW4gLiBTVkcgVmVyc2lvbjogMi4xLjAgQnVpbGQgMTQxKSAgLS0+CiAgPGRlZnM+CiAgICA8c3R5bGU+CiAgICAgIC5zdDAgewogICAgICAgIGZpbGw6ICM1YTE1MTU7CiAgICAgIH0KCiAgICAgIC5zdDEgewogICAgICAgIGZpbGw6ICNmZmY7CiAgICAgIH0KICAgIDwvc3R5bGU+CiAgPC9kZWZzPgogIDxnIGlkPSJWSUNDU19EZXNpZ25fXzIwMjdfTG9nbyI+CiAgICA8ZyBpZD0iTG9nb3MiPgogICAgICA8ZyBpZD0iVklDQ1NfQnJhbmRfQ29sb3IiPgogICAgICAgIDxnPgogICAgICAgICAgPGc+CiAgICAgICAgICAgIDxnPgogICAgICAgICAgICAgIDxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik0xNDM0LjIsMjQxLjNjLTE5LjMsODUtMTUyLjgsNjguNS0yMTIuNyw0M3YtODAuN2MxMi4yLDE2LjEsMTgsMzQuNiwzMS4xLDUwLjYsMjUuNSwzMS4xLDcwLjgsNTguMiwxMTEuNyw0MS41LDI0LjktMTAuMSwzNy44LTM1LjEsMzAtNjEtMjEtNjkuNy0xODQuNy02MC4zLTE3Mi42LTE2NC40LDkuOS04NSwxMzcuMy03NS43LDE5Ni41LTU5LjJ2NjYuMmMtNS41LDEtMy4yLS45LTQuMy0zLTE4LjktMzUuOC00Ny4yLTY1LjMtOTAuMS02OS4yLTU3LjEtNS4zLTg5LjEsNTIuMy00NC4xLDg5LjYsNTAuMiw0MS42LDE3NS42LDUzLjksMTU0LjUsMTQ2LjZoMFoiLz4KICAgICAgICAgICAgICA8cGF0aCBjbGFzcz0ic3QxIiBkPSJNMTE0NywyNDkuMWwtLjQsMTguMmMtMjUuNiwxNS43LTU1LjcsMjkuMS04NS43LDMzLjMtMjM0LjgsMzIuOC0yNjAuOS0zMTguNiw4LjUtMjk5LjksMjIuOCwxLjYsNTIuOCw3LDczLjUsMTUuNXY2My4xYy00LjksMS0zLjMtLjYtNC42LTIuNy0yLjUtMy45LTQtOS40LTYuOS0xMy43LTU3LjUtODcuMS0xNzkuNC03Mi4zLTIwMC43LDM1LTI3LjIsMTM2LjksOTcuOSwyNDAuNSwyMTYuNCwxNTEuMloiLz4KICAgICAgICAgICAgPC9nPgogICAgICAgICAgICA8cGF0aCBjbGFzcz0ic3QwIiBkPSJNODE3LjgsMjY0LjdjLTEuMSw1LjYtMjUuMSwxNy4xLTMxLjcsMjAtNTQuOCwyNC4yLTEyMy4zLDI0LjctMTc0LjMtOC42LTkyLjEtNjAuMS04My4xLTE5OC44LDEwLTI1Myw1Ny44LTMzLjcsMTI5LjUtMjQsMTkxLjktMTB2NjYuMmwtMjEuNy0zMy4yYy02NC42LTY1LjktMTYzLjQtNDkuOC0xODcuMiw0NC43LTI4LjIsMTEyLDU1LjUsMjI5LjEsMTc2LjQsMTgwLjUsMTMuOC01LjUsMjMuNS0xNC41LDM2LjctMjAuMi0uNCw0LjMuOCw5LjQsMCwxMy41aDBaIi8+CiAgICAgICAgICA8L2c+CiAgICAgICAgICA8Zz4KICAgICAgICAgICAgPHBhdGggY2xhc3M9InN0MSIgZD0iTTM1Miw0LjhsLTE4LjcsMTEuNGMtNTUuMSw4My44LTkyLjksMTgwLjMtMTM2LjksMjcwLjktMS43LDMuNS02LjksMTYuOC0xMS4xLDE1LjhMNTMuNCw0My41Yy02LjgtMTEuMS0xMy4zLTIwLjEtMjQuNi0yNy4xTDAsNC44aDEzNC42bC0xNS4yLDYuNWMtMTAuNiw2LjUtMTEuMSwxOC40LTcsMjkuMWw5Ni44LDE5OC4zYzMtLjIsMy4xLTMuMiw0LjItNS4xLDIzLjUtNDUuMiw1OC45LTExOC42LDc0LTE2Ni4yLDUuOS0xOC44LDEyLjItMzkuMy01LTU0LjFsLTE5LjQtOC42aDg5LDBaIi8+CiAgICAgICAgICAgIDxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik00OTYuOSwzMDAuOWgtMTA5LjdjMi44LS40LDEyLjktMi4zLDIwLjctMTEuNCwzLjgtNC40LDYuMy05LjgsNy41LTE1LjQsMS4zLTUuOC42LTExLjEuNC0xNi45LS41LTEzLjktLjctMjcuNy0uNS00MS41LjItMjguMSwxLjQtNTYuMiwyLTg0LjNzLjktNTUuNC0uOS04My4xYzAtLjQsMC0uOCwwLTEuMi0uOC0xMi40LTIuMy0yOC45LTEzLjktMzUuOGwtMTUuMi02LjVoMTA5LjdsLTE1LjIsNi41Yy05LjksNS43LTExLjQsMTUuNS0xMy41LDI1LjgsMS45LDM2LjcuNCw3NC45LS44LDExMy0uNiwxOC4xLTEuMiwzNi4xLTEuMiw1NC4yLDAsMTAuNS4yLDIxLC41LDMxLjUuNCwxMi41LDAsMjUuOCwyLjYsMzguMSwxLjYsNy4xLDQuOCwxNC4xLDEwLjMsMTksNS44LDUuMiwxMi43LDcuMSwxNy4zLDcuOGgwWiIvPgogICAgICAgICAgPC9nPgogICAgICAgIDwvZz4KICAgICAgICA8Zz4KICAgICAgICAgIDxnPgogICAgICAgICAgICA8cGF0aCBjbGFzcz0ic3QxIiBkPSJNNDQ2LjIsMzYwLjVjLTIuMi0zLjUtNS4yLTYuMy05LjEtOC4yLTMuOS0xLjktOC40LTIuOS0xMy41LTIuOWgtMjEuM3Y0Ni45aDIxLjNjNS4xLDAsOS42LTEsMTMuNS0yLjksMy45LTIsNy00LjcsOS4xLTguMiwyLjItMy41LDMuMy03LjYsMy4zLTEyLjNzLTEuMS04LjgtMy4zLTEyLjRaTTQzNC4zLDM4My41Yy0yLjgsMi42LTYuNSwzLjktMTEuMiwzLjloLTkuOXYtMjkuMWg5LjljNC43LDAsOC40LDEuMywxMS4yLDMuOSwyLjgsMi42LDQuMiw2LjIsNC4yLDEwLjZzLTEuNCw4LTQuMiwxMC42aDBaIi8+CiAgICAgICAgICAgIDxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik01MDQuOSwzNDkuNHY4LjdoNDYuMXYtOC43aC00Ni4xWk01MDQuOSwzNjguM3Y4LjRoNDIuM3YtOC40aC00Mi4zWk01MDQuOSwzODcuNnY4LjdoNDcuMnYtOC43aC00Ny4yWiIvPgogICAgICAgICAgICA8cGF0aCBjbGFzcz0ic3QxIiBkPSJNNjQ4LjIsMzc1LjFjLTEuNi0xLjgtMy42LTMuMi01LjktNC0yLjMtLjgtNS4yLTEuNy04LjgtMi41LTMuNS0uOC02LTEuNS03LjctMi4zcy0yLjUtMi0yLjUtMy42LjctMi45LDIuMi0zLjljMS41LTEsMy43LTEuNSw2LjctMS41LDQuMywwLDguNywxLjIsMTMsMy43bDMuMy04LjJjLTIuMi0xLjMtNC42LTIuNC03LjUtMy4xLTIuOC0uNy01LjgtMS4xLTguOC0xLjEtNC4zLDAtNy45LjYtMTAuOSwyLTMsMS4zLTUuMiwzLTYuNyw1LjMtMS41LDIuMi0yLjIsNC43LTIuMiw3LjRzLjgsNS42LDIuNCw3LjVjMS42LDEuOSwzLjYsMy4yLDUuOSw0LjEsMi4zLjksNS4yLDEuNyw4LjgsMi42LDIuMy41LDQuMiwxLDUuNSwxLjUsMS40LjQsMi41LDEsMy40LDEuOC45LjcsMS4zLDEuNywxLjMsMi44cy0uNywyLjctMi4yLDMuN2MtMS41LjktMy44LDEuNC02LjgsMS40cy01LjUtLjQtOC4zLTEuM2MtMi44LS45LTUuMi0yLjEtNy4yLTMuNWwtMy43LDguMmMyLjEsMS42LDQuOSwyLjksOC4zLDMuOSwzLjUsMSw3LDEuNSwxMC44LDEuNXM3LjktLjYsMTAuOS0yYzMtMS4zLDUuMi0zLDYuNy01LjMsMS41LTIuMiwyLjItNC43LDIuMi03LjNzLS44LTUuNi0yLjUtNy40aDBaIi8+CiAgICAgICAgICAgIDxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik03MjguMywzNDkuNHY0Ni45aDEwLjl2LTQ2LjloLTEwLjlaIi8+CiAgICAgICAgICAgIDxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik04NDguMywzODUuOWMtMi41LDEuMy01LjMsMi04LjUsMnMtNS42LS42LTcuOS0xLjljLTIuMy0xLjMtNC4xLTMtNS40LTUuMy0xLjMtMi4zLTItNC45LTItNy44cy43LTUuNiwyLTcuOWMxLjMtMi4zLDMuMS00LDUuNC01LjMsMi4zLTEuMiw1LTEuOSw4LTEuOSw0LjcsMCw4LjgsMS44LDEyLjEsNS4zbDctNi41Yy0yLjMtMi42LTUuMS00LjYtOC41LTYtMy40LTEuNC03LjEtMi4xLTExLjItMi4xcy05LjMsMS0xMy4zLDMuMWMtMy45LDIuMS03LDUtOS4yLDguNy0yLjIsMy43LTMuMyw3LjktMy4zLDEyLjVzMS4xLDguOCwzLjMsMTIuNWMyLjIsMy43LDUuMyw2LjYsOS4yLDguNywzLjksMi4xLDguMywzLjEsMTMuMiwzLjFzNi44LS41LDEwLjEtMS41YzMuNC0xLDYuMy0yLjUsOC45LTQuNHYtMTloLTkuOXYxMy43aDBaIi8+CiAgICAgICAgICAgIDxwYXRoIGNsYXNzPSJzdDEiIGQ9Ik05NDkuOCwzNDkuNHYyOC41bC0yMy4zLTI4LjVoLTl2NDYuOWgxMC43di0yOC41bDIzLjQsMjguNWg4Ljl2LTQ2LjloLTEwLjdaIi8+CiAgICAgICAgICA8L2c+CiAgICAgICAgICA8cmVjdCBjbGFzcz0ic3QxIiB4PSIxOTQuMSIgeT0iMzcwLjMiIHdpZHRoPSIxNzYuNCIgaGVpZ2h0PSI1LjEiLz4KICAgICAgICAgIDxyZWN0IGNsYXNzPSJzdDEiIHg9Ijk5NS41IiB5PSIzNjkuOCIgd2lkdGg9IjE3Ni40IiBoZWlnaHQ9IjUuMSIvPgogICAgICAgIDwvZz4KICAgICAgPC9nPgogICAgPC9nPgogIDwvZz4KPC9zdmc+",
+      isotipoColor: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FtYWRhXzIiIGRhdGEtbmFtZT0iQ2FtYWRhIDIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDgxNy4yMyA1NDguODkiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICM1YTE1MTU7CiAgICAgIH0KCiAgICAgIC5jbHMtMiB7CiAgICAgICAgZmlsbDogIzRlMTYxNzsKICAgICAgfQoKICAgICAgLmNscy0zIHsKICAgICAgICBmaWxsOiAjMjYyZTJmOwogICAgICB9CiAgICA8L3N0eWxlPgogIDwvZGVmcz4KICA8ZyBpZD0iVklDQ1NfRGVzaWduX18yMDI3X0xvZ28iIGRhdGEtbmFtZT0iVklDQ1NfRGVzaWduIF8yMDI3X0xvZ28iPgogICAgPGcgaWQ9IlZJQ0NTX1NpbWJvbF9Db2xvciI+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMyIgZD0iTTAsMGgyNDcuMzJ2OC45NWMtMi44LTEuMTEtMTUuNDEtNS43NS0yOS40NywwLTE0LjQ1LDUuOTEtMjAuMDcsMTguNTYtMjEuNTcsMjIuMS01LjI3LDEyLjM5LTMuMDQsMjMuNTYtMi4xLDI3LjM2LDU2Ljc2LDEzMS4zLDExMy41MywyNjIuNiwxNzAuMjksMzkzLjg5LDEuODIsNy4wOSwzLjY0LDE0LjE5LDUuNDYsMjEuMjhsLTQ0LjczLDY4LjQxLTExLjU4LDUuNzlMOTkuNDUsNzcuMzVjLTMuNDQtOS40LTEwLjEzLTIzLjctMjMuMTUtMzcuMzYtNS42LTUuODctMTguNDMtMTkuMDItMzkuOTktMjYuMzFDMjEuMjEsOC41OCw3Ljk5LDguNDMsMCw4Ljk1VjBaIi8+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMiIgZD0iTTM3Ni4yNCw0NjIuNTRjMTEuMTgtODMuMTIsMzEuMzgtMTM1LjI2LDQ4LjcxLTE2OC4yNiwxNC44MS0yOC4yLDIzLjA2LTQ2Ljk5LDM5LjU1LTg0LjU3LDEwLjg2LTI0Ljc2LDE2LjctMzkuNDksMjAuNTUtNTkuMDEsNS4yOC0yNi43OCw0LjI5LTQ5LjcsMi41My02NS4xNSw4LjE5LDIxLjk5LDE4LjMyLDU3LjE4LDE4LjM0LDEwMS4yMS4wMyw1MS43OS0xMy45NSw4OS45OC0yMS41MSwxMTAuMDYtMTUuMDIsMzkuOS0zMy43NCw2Ni43NS01OC4xOSwxMDEuODQtMTkuMDUsMjcuMzMtMzYuODEsNDguODUtNDkuOTcsNjMuODlaIi8+CiAgICAgIDxwYXRoIGNsYXNzPSJjbHMtMSIgZD0iTTQyOC4xLDE1Ny40N2MzLjExLTEyLjQxLDYuMDItMzEuMSwyLjg2LTUzLjI4LTEuNjEtMTEuMjgtNC40Ni0yOS43Ny0xNy4zNi00OS40Ni0xMy41Mi0yMC42NC0zMC41OC0zMS4wNC0zNi4xNC0zNC4yMS0yNy4xOC0xNS40OC01My42My0xNC4xOS02My44My0xMy4xNVYwYzQ4LjE1LjM5LDk2LjMuNzksMTQ0LjQ0LDEuMTgsNDEuNjIuNTIsODMuMjMsMS4wMywxMjQuODUsMS41NSwzMS45NCwzLjU2LDU3LjM3LDExLjc4LDc0Ljg1LDE4Ljg0LDMwLjY2LDEyLjM4LDUxLjAyLDI2LjkyLDU1LjI1LDI5Ljk5LDI1LjY3LDE4LjU5LDQyLjIsMzguMjcsNTEuMDQsNDkuOTksNS4wMSw2LjY0LDE2LjczLDIyLjkxLDI3LjM2LDQ2LjMxLDEwLjU3LDIzLjI4LDE0Ljg4LDQyLjIxLDE3Ljg5LDU1Ljc4LDguMjEsMzcuMDQsOCw2Ni4yNCw3Ljg5LDczLjE0LS42Myw0MC40Ny05LjM2LDcxLjA4LTEzLjE2LDgzLjE0LTEyLjQyLDM5LjU0LTMwLjMzLDY2LjQ2LTM2LjgzLDc1Ljc3LTE5LjM4LDI3Ljc2LTM5LjA2LDQ0LjcxLTQ0LjczLDQ5LjQ2LTUuMzQsNC40OC0yMy43NiwxOS41My01MS41NywzMy4xNS01LjUyLDIuNy0zMC43OSwxNC44NC02Ny44OCwyMi42My0yMS4yOCw0LjQ3LTM2Ljg2LDUuNDktNTguOTQsNi44NC0zNi4zNywyLjIzLTU0LjYxLjQ5LTExMi4wOCwwLTIyLjg0LS4xOS00MS40MS0uMS01My4xNSwwbDMwLjUyLTQyLjFjOS4wMiw1LjA5LDIxLjIzLDExLjE0LDM2LjMxLDE2LjMxLDkuMjksMy4xOSwyOC4wMiw4LjkyLDUyLjYyLDExLjA1LDExLC45NSwyOC45NSwyLjM5LDUyLjA5LTEuNTgsMTAuMDYtMS43MiwyOS40LTUuODksNTEuNTctMTYuODQsOC4zOS00LjE0LDI3LjU1LTE0LjM3LDQ3LjM2LTMzLjE1LDI2LjI1LTI0Ljg4LDM4LjU2LTUwLjUsNDguOTQtNzIuNjIsNS4zNi0xMS40MywxOS42LTQzLjYyLDI2LjMxLTg4LjQsNi4xLTQwLjcyLDMuMDEtNzIuMTEuNTMtOTUuNzctMi4zMi0yMi4wNi01LjczLTUyLjYtMTkuNDctODkuOTgtOS45LTI2LjkzLTE4LjUyLTUwLjM3LTQxLjA0LTczLjE0LTQtNC4wNS0yMS4zOS0yMS4xNi00OS40Ni0zMy42OC0xMS42NC01LjE5LTI0LjkzLTEwLjk3LTQzLjY4LTEyLjEtOS44My0uNTktMjYuMjgtLjIyLTQ0LjczLDYuODQtMTguMDksNi45My0yOS4zOSwxNi45NS0zNi44MywyMy42OC0yMC44MSwxOC44Mi0zMC42NSwzOS4wMS0zNy4zNiw1My4xNS02LjE0LDEyLjkyLTEzLjg1LDMyLjY5LTE3LjYzLDU4LjI4LTIuMjctLjA5LTQuNTQtLjE4LTYuODEtLjI2WiIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+",
+      isotipoWhite: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FtYWRhXzIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmVyc2lvbj0iMS4xIiB2aWV3Qm94PSIwIDAgODE3LjIgNTQ4LjkiPgogIDwhLS0gR2VuZXJhdG9yOiBBZG9iZSBJbGx1c3RyYXRvciAyOS41LjEsIFNWRyBFeHBvcnQgUGx1Zy1JbiAuIFNWRyBWZXJzaW9uOiAyLjEuMCBCdWlsZCAxNDEpICAtLT4KICA8ZGVmcz4KICAgIDxzdHlsZT4KICAgICAgLnN0MCB7CiAgICAgICAgZmlsbDogIzVhMTUxNTsKICAgICAgfQoKICAgICAgLnN0MSB7CiAgICAgICAgZmlsbDogI2ZmZjsKICAgICAgfQoKICAgICAgLnN0MiB7CiAgICAgICAgZmlsbDogIzRlMTYxNzsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPGcgaWQ9IlZJQ0NTX0Rlc2lnbl9fMjAyN19Mb2dvIj4KICAgIDxnIGlkPSJWSUNDU19TaW1ib2xfQ29sb3IiPgogICAgICA8cGF0aCBjbGFzcz0ic3QxIiBkPSJNMCwwaDI0Ny4zdjguOWMtMi44LTEuMS0xNS40LTUuOC0yOS41LDAtMTQuNCw1LjktMjAuMSwxOC42LTIxLjYsMjIuMS01LjMsMTIuNC0zLDIzLjYtMi4xLDI3LjQsNTYuOCwxMzEuMywxMTMuNSwyNjIuNiwxNzAuMywzOTMuOSwxLjgsNy4xLDMuNiwxNC4yLDUuNSwyMS4zbC00NC43LDY4LjQtMTEuNiw1LjhMOTkuNCw3Ny4zYy0zLjQtOS40LTEwLjEtMjMuNy0yMy4yLTM3LjQtNS42LTUuOS0xOC40LTE5LTQwLTI2LjNDMjEuMiw4LjYsOCw4LjQsMCw4LjlWMFoiLz4KICAgICAgPHBhdGggY2xhc3M9InN0MiIgZD0iTTM3Ni4yLDQ2Mi41YzExLjItODMuMSwzMS40LTEzNS4zLDQ4LjctMTY4LjMsMTQuOC0yOC4yLDIzLjEtNDcsMzkuNS04NC42LDEwLjktMjQuOCwxNi43LTM5LjUsMjAuNS01OSw1LjMtMjYuOCw0LjMtNDkuNywyLjUtNjUuMiw4LjIsMjIsMTguMyw1Ny4yLDE4LjMsMTAxLjIsMCw1MS44LTE0LDkwLTIxLjUsMTEwLjEtMTUsMzkuOS0zMy43LDY2LjgtNTguMiwxMDEuOC0xOSwyNy4zLTM2LjgsNDguOS01MCw2My45aDBaIi8+CiAgICAgIDxwYXRoIGNsYXNzPSJzdDAiIGQ9Ik00MjguMSwxNTcuNWMzLjEtMTIuNCw2LTMxLjEsMi45LTUzLjMtMS42LTExLjMtNC41LTI5LjgtMTcuNC00OS41LTEzLjUtMjAuNi0zMC42LTMxLTM2LjEtMzQuMi0yNy4yLTE1LjUtNTMuNi0xNC4yLTYzLjgtMTMuMVYwYzQ4LjEuNCw5Ni4zLjgsMTQ0LjQsMS4yLDQxLjYuNSw4My4yLDEsMTI0LjgsMS42LDMxLjksMy42LDU3LjQsMTEuOCw3NC44LDE4LjgsMzAuNywxMi40LDUxLDI2LjksNTUuMiwzMCwyNS43LDE4LjYsNDIuMiwzOC4zLDUxLDUwLDUsNi42LDE2LjcsMjIuOSwyNy40LDQ2LjMsMTAuNiwyMy4zLDE0LjksNDIuMiwxNy45LDU1LjgsOC4yLDM3LDgsNjYuMiw3LjksNzMuMS0uNiw0MC41LTkuNCw3MS4xLTEzLjIsODMuMS0xMi40LDM5LjUtMzAuMyw2Ni41LTM2LjgsNzUuOC0xOS40LDI3LjgtMzkuMSw0NC43LTQ0LjcsNDkuNS01LjMsNC41LTIzLjgsMTkuNS01MS42LDMzLjItNS41LDIuNy0zMC44LDE0LjgtNjcuOSwyMi42LTIxLjMsNC41LTM2LjksNS41LTU4LjksNi44LTM2LjQsMi4yLTU0LjYuNS0xMTIuMSwwLTIyLjgtLjItNDEuNCwwLTUzLjEsMGwzMC41LTQyLjFjOSw1LjEsMjEuMiwxMS4xLDM2LjMsMTYuMyw5LjMsMy4yLDI4LDguOSw1Mi42LDExLDExLDEsMjksMi40LDUyLjEtMS42LDEwLjEtMS43LDI5LjQtNS45LDUxLjYtMTYuOCw4LjQtNC4xLDI3LjUtMTQuNCw0Ny40LTMzLjEsMjYuMi0yNC45LDM4LjYtNTAuNSw0OC45LTcyLjYsNS40LTExLjQsMTkuNi00My42LDI2LjMtODguNCw2LjEtNDAuNywzLTcyLjEuNS05NS44LTIuMy0yMi4xLTUuNy01Mi42LTE5LjUtOTAtOS45LTI2LjktMTguNS01MC40LTQxLTczLjEtNC00LTIxLjQtMjEuMi00OS41LTMzLjctMTEuNi01LjItMjQuOS0xMS00My43LTEyLjEtOS44LS42LTI2LjMtLjItNDQuNyw2LjgtMTguMSw2LjktMjkuNCwxNy0zNi44LDIzLjctMjAuOCwxOC44LTMwLjYsMzktMzcuNCw1My4yLTYuMSwxMi45LTEzLjksMzIuNy0xNy42LDU4LjMtMi4zLDAtNC41LS4yLTYuOC0uM2gwWiIvPgogICAgPC9nPgogIDwvZz4KPC9zdmc+",
+      colorsLogo: "data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4KPHN2ZyBpZD0iQ2FtYWRhXzIiIGRhdGEtbmFtZT0iQ2FtYWRhIDIiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDMxOC45NCAyMTAuODYiPgogIDxkZWZzPgogICAgPHN0eWxlPgogICAgICAuY2xzLTEgewogICAgICAgIGZpbGw6ICM1YTE1MTU7CiAgICAgIH0KCiAgICAgIC5jbHMtMiB7CiAgICAgICAgZmlsbDogI2EzMmIyYjsKICAgICAgfQoKICAgICAgLmNscy0zIHsKICAgICAgICBmaWxsOiAjNGUxNjE3OwogICAgICB9CgogICAgICAuY2xzLTQgewogICAgICAgIGZpbGw6ICMyNjJlMmY7CiAgICAgIH0KCiAgICAgIC5jbHMtNSB7CiAgICAgICAgZmlsbDogIzJkMzYzNjsKICAgICAgfQogICAgPC9zdHlsZT4KICA8L2RlZnM+CiAgPGcgaWQ9IkRlc2lnbl9FbGVtZW50cyIgZGF0YS1uYW1lPSJEZXNpZ24gRWxlbWVudHMiPgogICAgPGc+CiAgICAgIDxyZWN0IGNsYXNzPSJjbHMtNCIgeD0iMTEyLjU5IiB5PSIwIiB3aWR0aD0iOTUuODgiIGhlaWdodD0iOTUuODgiIHJ4PSI0Ny45NCIgcnk9IjQ3Ljk0Ii8+CiAgICAgIDxyZWN0IGNsYXNzPSJjbHMtMSIgeD0iMTEyLjU5IiB5PSIxMTQuOTgiIHdpZHRoPSI5NS44OCIgaGVpZ2h0PSI5NS44OCIgcng9IjQ3Ljk0IiByeT0iNDcuOTQiLz4KICAgICAgPHJlY3QgY2xhc3M9ImNscy0zIiB4PSIyMjMuMDYiIHk9IjExNC45OCIgd2lkdGg9Ijk1Ljg4IiBoZWlnaHQ9Ijk1Ljg4IiByeD0iNDcuOTQiIHJ5PSI0Ny45NCIvPgogICAgICA8cmVjdCBjbGFzcz0iY2xzLTUiIHg9IjAiIHk9IjAiIHdpZHRoPSI5NS44OCIgaGVpZ2h0PSI5NS44OCIgcng9IjQ3Ljk0IiByeT0iNDcuOTQiLz4KICAgICAgPHJlY3QgY2xhc3M9ImNscy0yIiB4PSIwIiB5PSIxMTQuOTgiIHdpZHRoPSI5NS44OCIgaGVpZ2h0PSI5NS44OCIgcng9IjQ3Ljk0IiByeT0iNDcuOTQiLz4KICAgIDwvZz4KICA8L2c+Cjwvc3ZnPg=="
+    };
+
 
     // --- SUPABASE CONFIGURATION ---
     const SUPABASE_URL = "https://ocljycqlajgaidnokehy.supabase.co";
@@ -199,6 +223,12 @@
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>;
         case 'eye-off':
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l18 18" /></svg>;
+        case 'code':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" /></svg>;
+        case 'terminal':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>;
+        case 'globe':
+          return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>;
         default:
           return <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.75" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>;
       }
@@ -206,7 +236,7 @@
 
     // --- DOMAIN CONSTANTS ---
     const BASE_SERVICES = [
-      // Motion Design (Novo Módulo Dinâmico)
+      // Motion Design (Módulo Dinâmico)
       { id: 'motion_custom', name: 'Motion Design Sob Medida', desc: 'Vídeos animados com controle de segundos e estilo', basePrice: 350, category: 'motion', iconName: 'motion', isMotion: true },
       { id: 'motion_story', name: 'Motion Stories / Reels (15s)', desc: 'Animação para redes sociais', basePrice: 200, category: 'motion', iconName: 'motion', isMotion: true, defaultSec: 15 },
       { id: 'motion_institucional', name: 'Vídeo Institucional / Comercial (30s-60s)', desc: 'Motion corporativo completo', basePrice: 650, category: 'motion', iconName: 'motion', isMotion: true, defaultSec: 45 },
@@ -215,6 +245,27 @@
       { id: 'id_visual', name: 'Identidade Visual Completa', desc: 'Brandbook, logo, tipografia e aplicações', basePrice: 650, category: 'design', iconName: 'design' },
       { id: 'logo', name: 'Logotipo Individual', desc: 'Símbolo principal e variações', basePrice: 200, category: 'design', iconName: 'design' },
       
+      // Gráfica & Papelaria (Design / Criação da Arte)
+      { id: 'grafica_cartao_visita', name: 'Cartão de Visita (Arte)', desc: 'Design frente e verso pronto para gráfica com marcas de corte', basePrice: 80, category: 'grafica', iconName: 'print' },
+      { id: 'grafica_papel_timbrado', name: 'Papel Timbrado (Arte)', desc: 'Layout A4 institucional e versão editável em Word/Docs', basePrice: 120, category: 'grafica', iconName: 'design' },
+      { id: 'grafica_convite_casamento', name: 'Convite de Casamento Impresso (Arte)', desc: 'Layout nobre, monograma e manual dos noivos/padrinhos', basePrice: 250, category: 'grafica', iconName: 'design' },
+      { id: 'grafica_cardapio', name: 'Cardápio / Menu Impresso (Arte)', desc: 'Diagramação profissional de itens e preços para gráfica', basePrice: 180, category: 'grafica', iconName: 'design' },
+      { id: 'grafica_flyer', name: 'Flyer / Panfleto Promocional (Arte)', desc: 'Arte para distribuição rápida frente/verso para impressão', basePrice: 60, category: 'grafica', iconName: 'print' },
+
+      // Web Development
+      { id: 'web_convite_interativo', name: 'Convite de Casamento Interativo (Webapp)', desc: 'Página web animada com RSVP, contagem regressiva e mapa', basePrice: 500, category: 'webdev', iconName: 'code' },
+      { id: 'web_landing_page', name: 'Landing Page (One Page)', desc: 'Página de alta conversão, responsiva, com CTA e WhatsApp', basePrice: 1200, category: 'webdev', iconName: 'code' },
+      { id: 'web_site_institucional', name: 'Site Institucional (até 5 páginas)', desc: 'Home, Quem Somos, Serviços, Contato e blog básico com SEO', basePrice: 2500, category: 'webdev', iconName: 'code' },
+      { id: 'web_site_portfolio', name: 'Site Portfólio / Blog Especializado', desc: 'Galeria visual de trabalhos, categorização e área de artigos', basePrice: 1800, category: 'webdev', iconName: 'code' },
+      { id: 'web_ecommerce', name: 'E-commerce / Loja Virtual Completa', desc: 'Catálogo, carrinho, gateway de pagamento e frete integrado', basePrice: 5000, category: 'webdev', iconName: 'code' },
+
+      // Sistemas & Software (Software Development)
+      { id: 'soft_sistema_simples', name: 'Sistema Web Simples (Painel / CRUD)', desc: 'Painel administrativo com login, cadastro e relatórios básicos', basePrice: 3500, category: 'software', iconName: 'terminal' },
+      { id: 'soft_mvp_saas', name: 'MVP / Micro-SaaS', desc: 'Produto viável mínimo com autenticação, dashboard e cobrança recorrente', basePrice: 15000, category: 'software', iconName: 'terminal' },
+      { id: 'soft_saas_completo', name: 'SaaS Completo (B2B / B2C)', desc: 'Arquitetura multi-tenant, controle de permissões (RBAC) e integrações avançadas', basePrice: 50000, category: 'software', iconName: 'terminal' },
+      { id: 'soft_sistema_custom', name: 'Sistema Sob Medida (Enterprise)', desc: 'Desenvolvimento customizado com regras de negócio exclusivas e APIs dedicadas', basePrice: 25000, category: 'software', iconName: 'terminal' },
+      { id: 'soft_app_mobile', name: 'Aplicativo Mobile (React Native / Flutter)', desc: 'App nativo iOS/Android com backend, notificações push e stores', basePrice: 12000, category: 'software', iconName: 'smartphone' },
+
       // Social Media
       { id: 'post_single', name: 'Post Instagram (Avulso)', desc: 'Design estático para feed ou carrossel', basePrice: 50, category: 'social', iconName: 'social' },
       
@@ -271,10 +322,13 @@
       { id: 'all', name: 'Todos os Serviços', iconName: 'palette' },
       { id: 'motion', name: 'Motion Design', iconName: 'motion' },
       { id: 'design', name: 'Identidade & Design', iconName: 'design' },
+      { id: 'grafica', name: 'Gráfica', iconName: 'printer' },
+      { id: 'webdev', name: 'Web Development', iconName: 'code' },
+      { id: 'software', name: 'Sistemas & Software', iconName: 'terminal' },
       { id: 'social', name: 'Social Media', iconName: 'social' },
       { id: 'mensal', name: 'Pacotes Mensais', iconName: 'mensal' },
       { id: 'print', name: 'Estampas', iconName: 'shirt' },
-      { id: 'impressao', name: 'Impressão', iconName: 'printer' },
+      { id: 'impressao', name: 'Grandes Formatos', iconName: 'printer' },
       { id: 'manutencao', name: 'Manutenções', iconName: 'wrench' },
     ];
 
@@ -831,7 +885,7 @@
       if (authLoading) {
         return (
           <div className="min-h-screen bg-[#070709] flex flex-col items-center justify-center space-y-4">
-            <div className="w-12 h-12 rounded-full border-2 border-purple-500/20 border-t-purple-500 animate-spin"></div>
+            <div className="w-12 h-12 rounded-full border-2 border-[#a32b2b]/20 border-t-[#a32b2b] animate-spin"></div>
             <p className="text-sm font-medium text-slate-400">Iniciando VICCS Pricing Pro...</p>
           </div>
         );
@@ -841,23 +895,27 @@
       if (!user) {
         return (
           <div className="min-h-screen bg-[#070709] flex items-center justify-center p-4 relative overflow-hidden">
-            {/* Ambient Background Glows */}
-            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-br from-purple-600/15 via-rose-600/10 to-transparent rounded-full blur-3xl pointer-events-none"></div>
+            {/* Ambient Background Glows (VICCS Crimson & Wine) */}
+            <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[520px] h-[520px] bg-gradient-to-br from-[#a32b2b]/25 via-[#5a1515]/20 to-transparent rounded-full blur-3xl pointer-events-none"></div>
 
             {/* Liquid Glass Login Card */}
             <div className="relative w-full max-w-md liquid-glass rounded-3xl p-8 sm:p-10 shadow-glass border border-white/[0.08] border-t-white/[0.22] overflow-hidden">
               {/* Light leak specular reflection */}
-              <div className="absolute -top-12 -left-12 w-40 h-40 bg-gradient-to-br from-rose-500/30 via-purple-500/20 to-transparent rounded-full blur-2xl pointer-events-none"></div>
+              <div className="absolute -top-12 -left-12 w-44 h-44 bg-gradient-to-br from-[#a32b2b]/35 via-[#5a1515]/20 to-transparent rounded-full blur-2xl pointer-events-none"></div>
 
               <div className="text-center mb-8 relative z-10">
-                <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-600/20 to-rose-500/20 border border-white/10 mb-4 shadow-glow-purple">
-                  <Icon name="palette" className="w-7 h-7 text-purple-400" />
+                <div className="inline-flex items-center justify-center mb-4 transition-transform hover:scale-105 duration-300">
+                  <img 
+                    src={BRAND_ASSETS.iconBWR} 
+                    alt="VICCS Logo" 
+                    className="w-16 h-16 sm:w-20 sm:h-20 object-contain rounded-2xl shadow-glow-crimson border border-white/15" 
+                  />
                 </div>
                 <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-white">
-                  {authMode === 'login' ? 'Welcome back' : 'Create an account'}
+                  {authMode === 'login' ? 'Bem-vindo de volta' : 'Criar Nova Conta'}
                 </h1>
                 <p className="text-xs sm:text-sm text-slate-400 mt-1.5">
-                  {authMode === 'login' ? 'Sign in to your Viccs pricing workspace' : 'Cadastre seu e-mail para acesso restrito'}
+                  {authMode === 'login' ? 'Acesse o ambiente restrito do VICCS Pricing Pro' : 'Cadastre seu e-mail para acesso restrito'}
                 </p>
               </div>
 
@@ -912,7 +970,7 @@
 
                 <button
                   type="submit"
-                  className="w-full mt-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-rose-500 via-purple-600 to-indigo-600 text-white font-semibold text-sm shadow-glow-pink hover:opacity-95 active:scale-[0.99] transition-all flex items-center justify-center gap-2"
+                  className="w-full mt-2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#a32b2b] via-[#852323] to-[#5a1515] text-white font-semibold text-sm shadow-glow-crimson hover:brightness-110 active:scale-[0.99] transition-all flex items-center justify-center gap-2 border border-white/10"
                 >
                   <span>{authMode === 'login' ? 'Entrar no Sistema' : 'Cadastrar Usuário'}</span>
                   <Icon name="arrow-right" className="w-4 h-4" />
@@ -937,7 +995,7 @@
                     <button
                       type="button"
                       onClick={() => { setAuthMode('login'); setAuthError(''); setAuthSuccess(''); }}
-                      className="text-purple-400 hover:text-purple-300 font-medium underline underline-offset-4 ml-1"
+                      className="text-rose-400 hover:text-rose-300 font-medium underline underline-offset-4 ml-1"
                     >
                       Fazer Login
                     </button>
@@ -948,7 +1006,7 @@
                 <button
                   type="button"
                   onClick={handleDevLogin}
-                  className="text-[11px] text-slate-500 hover:text-purple-400 transition-colors pt-2 border-t border-white/[0.05] w-full"
+                  className="text-[11px] text-slate-500 hover:text-rose-400 transition-colors pt-2 border-t border-white/[0.05] w-full"
                 >
                   ⚡ Entrar direto como Administrador (Preview Local)
                 </button>
@@ -994,8 +1052,8 @@
         <div className="min-h-screen bg-[#070709] flex flex-col pb-32 lg:pb-12">
           {/* Toast Notification */}
           {toastMsg && (
-            <div className="fixed top-5 right-5 z-50 px-4 py-3 rounded-xl bg-slate-900/95 border border-purple-500/40 text-white text-xs font-medium shadow-glow-purple flex items-center gap-2 backdrop-blur-lg animate-bounce">
-              <Icon name="check" className="w-4 h-4 text-purple-400" />
+            <div className="fixed top-5 right-5 z-50 px-4 py-3 rounded-xl bg-[#0e1014]/95 border border-[#a32b2b]/50 text-white text-xs font-medium shadow-glow-crimson flex items-center gap-2 backdrop-blur-lg animate-bounce">
+              <Icon name="check" className="w-4 h-4 text-emerald-400" />
               <span>{toastMsg}</span>
             </div>
           )}
@@ -1003,15 +1061,20 @@
           {/* Top Navbar (Liquid Glass) */}
           <header className="sticky top-0 z-40 w-full border-b border-white/[0.08] bg-[#070709]/80 backdrop-blur-2xl px-4 sm:px-8 py-3.5">
             <div className="max-w-7xl mx-auto flex items-center justify-between gap-4">
-              {/* Brand Logo */}
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-purple-600 to-indigo-600 flex items-center justify-center shadow-glow-purple border border-white/20">
-                  <span className="font-extrabold text-white text-sm tracking-tighter">V</span>
-                </div>
+              {/* Brand Logo (Official VICCS Identity) */}
+              <div className="flex items-center gap-3 select-none">
+                <img 
+                  src={BRAND_ASSETS.iconBWR} 
+                  alt="VICCS Icon" 
+                  className="w-9 h-9 sm:w-10 sm:h-10 object-contain rounded-xl shadow-glow-crimson border border-white/15 pointer-events-none" 
+                  draggable={false}
+                />
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-white tracking-tight text-base">VICCS Pricing</span>
-                    <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                    <span className="font-bold text-white tracking-tight text-base sm:text-lg">
+                      VICCS <span className="font-light text-slate-300">Pricing</span>
+                    </span>
+                    <span className="text-[10px] font-semibold tracking-wider uppercase px-2 py-0.5 rounded-full bg-[#a32b2b]/25 text-rose-300 border border-[#a32b2b]/40 shadow-sm">
                       PRO
                     </span>
                   </div>
@@ -1026,19 +1089,19 @@
                   onClick={() => { setIsHistoryOpen(true); fetchHistory(); }}
                   className="px-3.5 py-2 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-300 hover:text-white border border-white/10 text-xs font-medium transition-all flex items-center gap-1.5"
                 >
-                  <Icon name="history" className="w-4 h-4 text-purple-400" />
+                  <Icon name="history" className="w-4 h-4 text-rose-400" />
                   <span className="hidden sm:inline">Histórico</span>
                 </button>
 
                 {/* Cart Drawer Trigger */}
                 <button
                   onClick={() => setIsCartOpen(true)}
-                  className="relative px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 text-white text-xs font-semibold shadow-glow-purple hover:opacity-95 transition-all flex items-center gap-2"
+                  className="relative px-4 py-2 rounded-xl bg-gradient-to-r from-[#a32b2b] via-[#852323] to-[#5a1515] text-white text-xs font-semibold shadow-glow-crimson hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-2 border border-white/10"
                 >
                   <Icon name="cart" className="w-4 h-4" />
                   <span>Carrinho</span>
                   {cart.length > 0 && (
-                    <span className="px-1.5 py-0.2 text-[10px] font-bold bg-white text-purple-900 rounded-full">
+                    <span className="px-1.5 py-0.2 text-[10px] font-bold bg-white text-[#5a1515] rounded-full">
                       {cart.reduce((s, i) => s + i.quantity, 0)}
                     </span>
                   )}
@@ -1074,11 +1137,11 @@
                         onClick={() => setActiveCategory(cat.id)}
                         className={`px-3.5 py-2 rounded-xl text-xs font-medium transition-all flex items-center gap-2 border ${
                           isActive
-                            ? 'bg-purple-600/25 text-white border-purple-500/60 shadow-glow-purple'
+                            ? 'bg-[#a32b2b]/30 text-white border-[#a32b2b]/70 shadow-glow-crimson'
                             : 'bg-slate-900/60 text-slate-400 hover:text-slate-200 border-white/[0.07] hover:border-white/15'
                         }`}
                       >
-                        <Icon name={cat.iconName} className={`w-3.5 h-3.5 ${isActive ? 'text-purple-300' : 'text-slate-500'}`} />
+                        <Icon name={cat.iconName} className={`w-3.5 h-3.5 ${isActive ? 'text-rose-300' : 'text-slate-500'}`} />
                         <span>{cat.name}</span>
                       </button>
                     );
@@ -1098,24 +1161,24 @@
                         onClick={() => setSelectedServiceId(service.id)}
                         className={`p-4 rounded-2xl liquid-glass cursor-pointer transition-all border relative group ${
                           isSelected
-                            ? 'border-purple-500/70 bg-purple-950/20 shadow-glow-purple'
+                            ? 'border-[#a32b2b]/70 bg-[#5a1515]/20 shadow-glow-crimson'
                             : 'hover:border-white/20'
                         }`}
                       >
                         {/* Active Pill Glow Indicator (SmartShort style) */}
                         {isSelected && (
-                          <div className="absolute left-0 top-3 bottom-3 w-1 bg-purple-500 rounded-r-full shadow-[0_0_12px_#a855f7]"></div>
+                          <div className="absolute left-0 top-3 bottom-3 w-1 bg-[#a32b2b] rounded-r-full shadow-[0_0_12px_#a32b2b]"></div>
                         )}
 
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-center gap-2.5">
                             <div className={`w-8 h-8 rounded-xl flex items-center justify-center border ${
-                              isSelected ? 'bg-purple-500/20 text-purple-300 border-purple-500/40' : 'bg-slate-900 text-slate-400 border-white/10'
+                              isSelected ? 'bg-[#a32b2b]/25 text-rose-300 border-[#a32b2b]/40' : 'bg-slate-900 text-slate-400 border-white/10'
                             }`}>
                               <Icon name={service.iconName} className="w-4 h-4" />
                             </div>
                             <div>
-                              <h3 className="text-sm font-semibold text-white group-hover:text-purple-200 transition-colors">
+                              <h3 className="text-sm font-semibold text-white group-hover:text-rose-200 transition-colors">
                                 {service.name}
                               </h3>
                               <p className="text-[11px] text-slate-400 line-clamp-1">{service.desc}</p>
@@ -1143,10 +1206,10 @@
                   <div className="space-y-5">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Icon name="motion" className="w-4 h-4 text-purple-400" />
+                        <Icon name="motion" className="w-4 h-4 text-rose-400" />
                         <h4 className="text-sm font-semibold text-white">Parâmetros de Motion Design</h4>
                       </div>
-                      <span className="text-xs font-bold text-purple-400 px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+                      <span className="text-xs font-bold text-rose-400 px-2.5 py-0.5 rounded-full bg-[#a32b2b]/15 border border-[#a32b2b]/30">
                         {motionSeconds} segundos
                       </span>
                     </div>
@@ -1164,7 +1227,7 @@
                         step="5"
                         value={motionSeconds}
                         onChange={(e) => setMotionSeconds(parseInt(e.target.value))}
-                        className="w-full accent-purple-500 bg-slate-800 rounded-lg cursor-pointer h-2"
+                        className="w-full accent-[#a32b2b] bg-slate-800 rounded-lg cursor-pointer h-2"
                       />
                       <div className="flex justify-between text-[10px] text-slate-400 mt-1">
                         <span>5s (Stories rápido)</span>
@@ -1187,13 +1250,13 @@
                               onClick={() => setMotionStyle(style.id)}
                               className={`p-3 rounded-xl text-left border transition-all ${
                                 isSel
-                                  ? 'bg-purple-600/20 border-purple-500 text-white shadow-glow-purple'
+                                  ? 'bg-[#a32b2b]/25 border-[#a32b2b] text-white shadow-glow-crimson font-medium'
                                   : 'bg-slate-900/70 border-white/[0.08] text-slate-400 hover:text-slate-200'
                               }`}
                             >
                               <div className="text-xs font-semibold mb-0.5">{style.name}</div>
                               <div className="text-[10px] text-slate-400">{style.desc}</div>
-                              <div className="text-[10px] font-medium text-purple-300 mt-1.5">
+                              <div className="text-[10px] font-medium text-rose-300 mt-1.5">
                                 {formatCurrency(style.ratePerSec)}/s
                               </div>
                             </button>
@@ -1205,7 +1268,7 @@
                     {/* Sound Design Toggle */}
                     <div className="p-3.5 rounded-xl bg-slate-900/60 border border-white/[0.08] flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
-                        <Icon name="sound" className="w-4 h-4 text-purple-400" />
+                        <Icon name="sound" className="w-4 h-4 text-rose-400" />
                         <div>
                           <div className="text-xs font-semibold text-white">Sound Design & Trilha Sonora</div>
                           <div className="text-[10px] text-slate-400">Efeitos sonoros sincronizados e música comercial</div>
@@ -1218,7 +1281,7 @@
                           onChange={(e) => setSoundDesign(e.target.checked)}
                           className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-600"></div>
+                        <div className="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#a32b2b]"></div>
                       </label>
                     </div>
                   </div>
@@ -1229,10 +1292,10 @@
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <Icon name="printer" className="w-4 h-4 text-purple-400" />
+                        <Icon name="printer" className="w-4 h-4 text-rose-400" />
                         <h4 className="text-sm font-semibold text-white">Dimensões de Impressão</h4>
                       </div>
-                      <span className="text-xs font-bold text-purple-400 px-2.5 py-0.5 rounded-full bg-purple-500/10 border border-purple-500/20">
+                      <span className="text-xs font-bold text-rose-400 px-2.5 py-0.5 rounded-full bg-[#a32b2b]/15 border border-[#a32b2b]/30">
                         {computedArea} m² calculados
                       </span>
                     </div>
@@ -1321,7 +1384,7 @@
                   <button
                     type="button"
                     onClick={handleAddToCart}
-                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 via-indigo-600 to-purple-700 text-white font-semibold text-xs shadow-glow-purple hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center gap-2"
+                    className="px-6 py-3 rounded-xl bg-gradient-to-r from-[#a32b2b] via-[#852323] to-[#5a1515] text-white font-semibold text-xs shadow-glow-crimson hover:brightness-110 active:scale-[0.98] transition-all flex items-center gap-2 border border-white/10"
                   >
                     <Icon name="plus" className="w-4 h-4" />
                     <span>+ Adicionar ao Orçamento</span>
@@ -1338,7 +1401,7 @@
               <div className="p-6 rounded-3xl liquid-glass border border-white/[0.08] space-y-5">
                 <div className="flex items-center justify-between border-b border-white/[0.08] pb-4">
                   <div className="flex items-center gap-2">
-                    <Icon name="cart" className="w-5 h-5 text-purple-400" />
+                    <Icon name="cart" className="w-5 h-5 text-rose-400" />
                     <h3 className="text-base font-bold text-white">Resumo da Proposta</h3>
                   </div>
                   <span className="text-xs px-2.5 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-white/10 font-medium">
@@ -1383,7 +1446,7 @@
                         <div className="min-w-0 flex-1">
                           <div className="text-xs font-semibold text-white truncate">{item.serviceName}</div>
                           <div className="text-[10px] text-slate-400 truncate">{item.details}</div>
-                          <div className="text-xs font-semibold text-purple-300 mt-1">{formatCurrency(item.totalPrice)}</div>
+                          <div className="text-xs font-semibold text-rose-300 mt-1">{formatCurrency(item.totalPrice)}</div>
                         </div>
 
                         {/* Quantity Controls & Remove */}
@@ -1486,7 +1549,7 @@
                         onClick={() => setPaymentMethod(pay.id)}
                         className={`p-2.5 rounded-xl text-left border text-xs transition-all ${
                           paymentMethod === pay.id
-                            ? 'bg-purple-600/25 border-purple-500 text-white shadow-glow-purple font-semibold'
+                            ? 'bg-[#a32b2b]/30 border-[#a32b2b] text-white shadow-glow-crimson font-semibold'
                             : 'bg-slate-900/60 border-white/[0.08] text-slate-400 hover:text-slate-200'
                         }`}
                       >
@@ -1499,7 +1562,7 @@
                     <div className="pt-2">
                       <div className="flex justify-between text-xs text-slate-400 mb-1">
                         <span>Número de Parcelas</span>
-                        <span className="text-purple-300 font-bold">{installments}x de {formatCurrency(proposalTotals.installmentVal)}</span>
+                        <span className="text-rose-300 font-bold">{installments}x de {formatCurrency(proposalTotals.installmentVal)}</span>
                       </div>
                       <input
                         type="range"
@@ -1507,7 +1570,7 @@
                         max="12"
                         value={installments}
                         onChange={(e) => setInstallments(parseInt(e.target.value))}
-                        className="w-full accent-purple-500 bg-slate-800 rounded-lg cursor-pointer h-2"
+                        className="w-full accent-[#a32b2b] bg-slate-800 rounded-lg cursor-pointer h-2"
                       />
                     </div>
                   )}
@@ -1519,7 +1582,7 @@
                     <div>
                       <span className="text-xs text-slate-400">Investimento Final</span>
                       {installments > 1 && paymentMethod === 'cartao_parcelado' && (
-                        <div className="text-[11px] text-purple-400 font-medium">
+                        <div className="text-[11px] text-rose-400 font-medium">
                           {installments}x de {formatCurrency(proposalTotals.installmentVal)}
                         </div>
                       )}
@@ -1535,14 +1598,14 @@
                       onClick={handleCopyProposal}
                       className="py-3 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs border border-white/10 transition-all flex items-center justify-center gap-1.5"
                     >
-                      <Icon name={copied ? 'check' : 'copy'} className="w-4 h-4 text-purple-400" />
+                      <Icon name={copied ? 'check' : 'copy'} className="w-4 h-4 text-rose-400" />
                       <span>{copied ? 'Copiado!' : 'Copiar Resumo'}</span>
                     </button>
 
                     <button
                       onClick={handleGeneratePDF}
                       disabled={isGeneratingPDF}
-                      className="py-3 px-3 rounded-xl bg-gradient-to-r from-rose-500 to-purple-600 text-white font-semibold text-xs shadow-glow-pink hover:opacity-95 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50"
+                      className="py-3 px-3 rounded-xl bg-gradient-to-r from-[#a32b2b] via-[#852323] to-[#5a1515] text-white font-semibold text-xs shadow-glow-crimson hover:brightness-110 transition-all flex items-center justify-center gap-1.5 disabled:opacity-50 border border-white/10"
                     >
                       <Icon name="pdf" className="w-4 h-4" />
                       <span>{isGeneratingPDF ? 'Gerando...' : 'Gerar PDF'}</span>
@@ -1552,9 +1615,9 @@
                   <button
                     onClick={handleSaveProposal}
                     disabled={isSaving}
-                    className="w-full py-3 px-4 rounded-xl bg-purple-600/30 hover:bg-purple-600/40 text-purple-200 border border-purple-500/50 font-semibold text-xs transition-all flex items-center justify-center gap-2"
+                    className="w-full py-3 px-4 rounded-xl bg-[#5a1515]/30 hover:bg-[#5a1515]/50 text-rose-200 border border-[#a32b2b]/40 font-semibold text-xs transition-all flex items-center justify-center gap-2"
                   >
-                    <Icon name="shield" className="w-4 h-4 text-purple-400" />
+                    <Icon name="shield" className="w-4 h-4 text-rose-400" />
                     <span>{isSaving ? 'Salvando no Supabase...' : 'Salvar Proposta no Banco de Dados'}</span>
                   </button>
                 </div>
@@ -1570,7 +1633,7 @@
               <div className="w-full max-w-lg bg-[#0d0d14] border-l border-white/10 h-full p-6 flex flex-col shadow-2xl">
                 <div className="flex items-center justify-between pb-4 border-b border-white/10">
                   <div className="flex items-center gap-2">
-                    <Icon name="history" className="w-5 h-5 text-purple-400" />
+                    <Icon name="history" className="w-5 h-5 text-rose-400" />
                     <h3 className="text-base font-bold text-white">Histórico de Propostas Salvas</h3>
                   </div>
                   <button onClick={() => setIsHistoryOpen(false)} className="p-1 rounded-lg text-slate-400 hover:text-white">
@@ -1601,7 +1664,7 @@
                             <h4 className="text-sm font-bold text-white">{prop.client_name}</h4>
                             <p className="text-[10px] text-slate-400">{new Date(prop.created_at).toLocaleString('pt-BR')}</p>
                           </div>
-                          <span className="text-sm font-extrabold text-purple-400">{formatCurrency(prop.total_value)}</span>
+                          <span className="text-sm font-extrabold text-rose-400">{formatCurrency(prop.total_value)}</span>
                         </div>
 
                         <div className="text-[11px] text-slate-400">
@@ -1633,7 +1696,7 @@
                             setIsHistoryOpen(false);
                             showToast(`Proposta de ${prop.client_name} carregada!`);
                           }}
-                          className="w-full mt-2 py-2 rounded-xl bg-purple-600/20 hover:bg-purple-600/30 text-purple-300 text-xs font-semibold border border-purple-500/30 transition-colors"
+                          className="w-full mt-2 py-2 rounded-xl bg-[#a32b2b]/20 hover:bg-[#a32b2b]/35 text-rose-300 text-xs font-semibold border border-[#a32b2b]/35 transition-colors"
                         >
                           Carregar no Editor
                         </button>
@@ -1645,101 +1708,323 @@
             </div>
           )}
 
-          {/* HIDDEN CLEAN PDF TEMPLATE (RENDERED TO CANVAS & EXPORTED AS CONTINUOUS MULTIPAGE PDF) */}
-          <div id="pdf-proposal" className="bg-white text-slate-900 p-12 w-[800px] hidden absolute top-0 left-0 z-[-1]" style={{ width: '800px', margin: '0 auto', background: '#ffffff' }}>
-            {/* Header */}
-            <div className="flex justify-between items-start border-b-2 border-slate-200 pb-6 mb-8">
-              <div>
-                <h1 className="text-2xl font-black tracking-tight text-slate-950">PROPOSTA COMERCIAL</h1>
-                <p className="text-xs text-slate-500 font-medium mt-1">Data: {new Date().toLocaleDateString('pt-BR')} • Validade: 15 dias</p>
-                <div className="mt-3 text-xs">
-                  <span className="text-slate-500 font-medium">Cliente:</span>{' '}
-                  <span className="font-bold text-slate-900 text-sm">{clientName || 'A/C Cliente'}</span>
-                  {clientContact && <span className="text-slate-500 ml-2">({clientContact})</span>}
-                </div>
+
+          {/* MOBILE FLOATING SUMMARY BAR (iOS & Android Optimized) */}
+          <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 p-3 bg-[#08090b]/90 backdrop-blur-2xl border-t border-white/10 shadow-2xl">
+            <div className="max-w-md mx-auto flex items-center justify-between gap-3">
+              <div className="flex flex-col">
+                <span className="text-[10px] uppercase font-semibold text-slate-400">Total Proposta</span>
+                <span className="text-base font-extrabold text-white">{formatCurrency(proposalTotals.totalFinal)}</span>
               </div>
-              <div className="text-right">
-                <div className="text-xl font-black text-purple-700">VICCS DESIGN</div>
-                <div className="text-xs text-slate-500">contato@viccs.com.br</div>
-                <div className="text-xs text-slate-500">viccsdesign.vercel.app</div>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsCartOpen(true)}
+                  className="px-3.5 py-2.5 rounded-xl bg-slate-900 border border-white/10 text-white text-xs font-semibold flex items-center gap-1.5"
+                >
+                  <Icon name="cart" className="w-4 h-4 text-rose-400" />
+                  <span>{cart.length}</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#a32b2b] to-[#5a1515] text-white text-xs font-semibold shadow-glow-crimson flex items-center gap-1.5 active:scale-95 transition-all"
+                >
+                  <Icon name="plus" className="w-4 h-4" />
+                  <span>Adicionar</span>
+                </button>
               </div>
             </div>
+          </div>
 
-            {/* Scope Table */}
-            <div className="mb-8">
-              <h2 className="text-sm font-bold text-slate-950 uppercase tracking-wider mb-3">Escopo do Projeto</h2>
-              <table className="w-full border-collapse text-left text-xs">
-                <thead>
-                  <tr className="border-b border-slate-300 bg-slate-50 text-slate-700">
-                    <th className="py-2.5 px-3 font-bold">Item</th>
-                    <th className="py-2.5 px-3 font-bold">Serviço & Especificações</th>
-                    <th className="py-2.5 px-3 font-bold text-center">Qtd</th>
-                    <th className="py-2.5 px-3 font-bold text-right">Subtotal</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-200">
-                  {cart.map((item, idx) => (
-                    <tr key={idx}>
-                      <td className="py-3 px-3 font-semibold text-slate-900">{idx + 1}</td>
-                      <td className="py-3 px-3">
-                        <div className="font-bold text-slate-900">{item.serviceName}</div>
-                        <div className="text-[11px] text-slate-500">{item.details}</div>
-                      </td>
-                      <td className="py-3 px-3 text-center font-medium text-slate-700">{item.quantity}</td>
-                      <td className="py-3 px-3 text-right font-bold text-slate-900">{formatCurrency(item.totalPrice)}</td>
+          {/* MOBILE / TABLET CART DRAWER */}
+          {isCartOpen && (
+            <div className="lg:hidden fixed inset-0 z-50 flex justify-end bg-black/75 backdrop-blur-md animate-fade-in">
+              <div className="w-full max-w-md bg-[#0d0f12] border-l border-white/10 h-full p-5 flex flex-col shadow-2xl overflow-y-auto">
+                <div className="flex items-center justify-between pb-4 border-b border-white/10">
+                  <div className="flex items-center gap-2">
+                    <Icon name="cart" className="w-5 h-5 text-rose-400" />
+                    <h3 className="text-base font-bold text-white">Carrinho ({cart.length})</h3>
+                  </div>
+                  <button onClick={() => setIsCartOpen(false)} className="p-1.5 rounded-lg text-slate-400 hover:text-white">
+                    <Icon name="close" className="w-5 h-5" />
+                  </button>
+                </div>
+
+                <div className="flex-1 py-4 space-y-3">
+                  {cart.length === 0 ? (
+                    <div className="py-12 text-center text-slate-500 text-xs">
+                      Seu carrinho está vazio.<br />Adicione serviços para calcular a proposta.
+                    </div>
+                  ) : (
+                    cart.map(item => (
+                      <div key={item.id} className="p-3.5 rounded-2xl bg-slate-900/90 border border-white/[0.08] flex items-center justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="text-xs font-semibold text-white truncate">{item.serviceName}</div>
+                          <div className="text-[10px] text-slate-400 truncate">{item.details}</div>
+                          <div className="text-xs font-semibold text-rose-300 mt-1">{formatCurrency(item.totalPrice)}</div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <div className="flex items-center rounded-lg bg-slate-800 border border-white/10 p-0.5">
+                            <button onClick={() => handleUpdateQuantity(item.id, -1)} className="px-2 py-0.5 text-xs text-slate-300">-</button>
+                            <span className="px-1.5 text-xs font-bold text-white">{item.quantity}</span>
+                            <button onClick={() => handleUpdateQuantity(item.id, 1)} className="px-2 py-0.5 text-xs text-slate-300">+</button>
+                          </div>
+                          <button onClick={() => handleRemoveItem(item.id)} className="p-1.5 text-slate-500 hover:text-rose-400">
+                            <Icon name="trash" className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <div className="pt-4 border-t border-white/10 space-y-3">
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-xs text-slate-400">Total:</span>
+                    <span className="text-xl font-bold text-white">{formatCurrency(proposalTotals.totalFinal)}</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => { handleCopyProposal(); setIsCartOpen(false); }}
+                      className="py-3 rounded-xl bg-slate-800 text-white font-semibold text-xs border border-white/10 flex items-center justify-center gap-1.5"
+                    >
+                      <Icon name="copy" className="w-4 h-4 text-rose-400" />
+                      <span>Copiar</span>
+                    </button>
+                    <button
+                      onClick={() => { handleGeneratePDF(); setIsCartOpen(false); }}
+                      className="py-3 rounded-xl bg-gradient-to-r from-[#a32b2b] to-[#5a1515] text-white font-semibold text-xs shadow-glow-crimson flex items-center justify-center gap-1.5"
+                    >
+                      <Icon name="pdf" className="w-4 h-4" />
+                      <span>PDF</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* HIDDEN PREMIUM VICCS BRANDED PDF TEMPLATE (CONTINUOUS MULTIPAGE PDF EXPORT) */}
+          <div 
+            id="pdf-proposal" 
+            className="bg-white text-[#262e2f] hidden absolute top-0 left-0 z-[-1] font-sans overflow-hidden" 
+            style={{ width: '800px', margin: '0 auto', background: '#ffffff', boxSizing: 'border-box' }}
+          >
+            {/* Top Official Tricolor Stripe (Carmim, Vinho, Gunmetal) */}
+            <div className="w-full flex h-2">
+              <div className="w-1/2 bg-[#a32b2b]"></div>
+              <div className="w-1/4 bg-[#5a1515]"></div>
+              <div className="w-1/4 bg-[#262e2f]"></div>
+            </div>
+
+            {/* Subtle Watermark (Isótipo Oficial da Marca no Fundo) */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none overflow-hidden" style={{ zIndex: 0 }}>
+              <img 
+                src={BRAND_ASSETS.isotipoColor} 
+                alt="" 
+                style={{ width: '420px', height: '420px', opacity: 0.035, transform: 'rotate(-4deg)' }} 
+              />
+            </div>
+
+            {/* Document Content Wrapper */}
+            <div className="relative z-10 p-10 pb-8">
+              {/* Header: Logo, Isótipo & Metadados */}
+              <div className="flex justify-between items-start border-b border-slate-200/90 pb-6 mb-7">
+                <div>
+                  <img src={BRAND_ASSETS.logoTxtDark} alt="VICCS DESIGN" className="h-12 object-contain mb-2" />
+                  <div className="text-[10px] tracking-[0.22em] font-extrabold text-[#5a1515] uppercase">
+                    ESTÚDIO DE DESIGN, WEB DEVELOPMENT & TECNOLOGIA
+                  </div>
+                  {/* Brand Color Dot Palette */}
+                  <div className="flex items-center gap-1.5 mt-2.5">
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#a32b2b]" title="Carmim #a32b2b"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#5a1515]" title="Vinho #5a1515"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#4e1617]" title="Dark Wine #4e1617"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#262e2f]" title="Gunmetal #262e2f"></span>
+                    <span className="w-2.5 h-2.5 rounded-full bg-[#2d3636]" title="Titanium #2d3636"></span>
+                    <span className="text-[10px] text-slate-400 font-medium ml-1.5">Identidade Visual Oficial</span>
+                  </div>
+                </div>
+
+                <div className="text-right flex items-center gap-3.5 bg-rose-50/50 border border-[#a32b2b]/25 rounded-2xl p-3.5">
+                  <img src={BRAND_ASSETS.isotipoColor} alt="Isótipo VICCS" className="w-12 h-12 object-contain" />
+                  <div className="text-right">
+                    <div className="text-[11px] font-black text-[#a32b2b] uppercase tracking-wider">PROPOSTA COMERCIAL</div>
+                    <div className="text-xs font-black text-[#262e2f] mt-0.5">Nº VICCS-{new Date().getFullYear()}-{Date.now().toString().slice(-4)}</div>
+                    <div className="text-[10px] text-slate-500 font-medium mt-0.5">
+                      Emissão: {new Date().toLocaleDateString('pt-BR')} • Validade: 15 dias
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Client & Issuer Information Box */}
+              <div className="bg-slate-50/80 rounded-2xl border border-slate-200 border-l-4 border-l-[#a32b2b] p-5 mb-7 grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <div className="text-[10px] font-bold text-[#a32b2b] uppercase tracking-wider mb-1">Destinatário / Cliente</div>
+                  <div className="text-base font-black text-[#262e2f]">{clientName || 'A/C Cliente / Empresa'}</div>
+                  <div className="text-xs text-slate-600 font-medium mt-0.5">
+                    {clientContact ? 'Contato: ' + clientContact : 'Atendimento Comercial Direto'}
+                  </div>
+                </div>
+                <div>
+                  <div className="text-[10px] font-bold text-[#5a1515] uppercase tracking-wider mb-1">Responsável Técnico / Emissor</div>
+                  <div className="text-sm font-black text-[#262e2f]">Matheus Victor • VICCS Design</div>
+                  <div className="text-xs text-slate-600 font-medium mt-0.5">contato@viccs.com.br • viccsdesign.vercel.app</div>
+                </div>
+              </div>
+
+              {/* Scope Table */}
+              <div className="mb-7">
+                <div className="flex items-center gap-2 mb-3">
+                  <span className="w-1.5 h-4 bg-[#a32b2b] rounded-full"></span>
+                  <h2 className="text-xs font-black uppercase tracking-wider text-[#262e2f]">
+                    Escopo Detalhado dos Serviços
+                  </h2>
+                </div>
+                
+                <table className="w-full border-collapse text-left text-xs rounded-xl overflow-hidden shadow-sm">
+                  <thead>
+                    <tr className="bg-[#262e2f] text-white text-[11px] uppercase tracking-wider">
+                      <th className="py-3 px-3 font-bold text-center w-8">#</th>
+                      <th className="py-3 px-3 font-bold w-48">Serviço & Categoria</th>
+                      <th className="py-3 px-3 font-bold">Especificações & Parâmetros</th>
+                      <th className="py-3 px-3 font-bold text-center w-12">Qtd</th>
+                      <th className="py-3 px-3 font-bold text-right w-24">Unitário</th>
+                      <th className="py-3 px-3 font-bold text-right w-28">Total</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Commercial Adjustments Breakdown */}
-            <div className="bg-slate-50 p-6 rounded-xl border border-slate-200 mb-8 space-y-2 text-xs">
-              <div className="flex justify-between text-slate-600">
-                <span>Subtotal dos Serviços:</span>
-                <span className="font-semibold text-slate-900">{formatCurrency(proposalTotals.subtotal)}</span>
+                  </thead>
+                  <tbody className="divide-y divide-slate-200 border-x border-b border-slate-200">
+                    {cart.map((item, idx) => (
+                      <tr key={idx} className={idx % 2 === 1 ? 'bg-slate-50/60' : 'bg-white'}>
+                        <td className="py-3.5 px-3 font-bold text-slate-400 text-center">{idx + 1}</td>
+                        <td className="py-3.5 px-3">
+                          <span className="inline-block text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-[#a32b2b]/10 text-[#a32b2b] mb-1">
+                            {item.category}
+                          </span>
+                          <div className="font-black text-[#262e2f] text-xs leading-snug">{item.serviceName}</div>
+                        </td>
+                        <td className="py-3.5 px-3">
+                          <div className="text-[11px] text-slate-600 leading-snug font-medium">{item.details}</div>
+                        </td>
+                        <td className="py-3.5 px-3 text-center font-bold text-[#262e2f]">{item.quantity}</td>
+                        <td className="py-3.5 px-3 text-right font-medium text-slate-600">{formatCurrency(item.unitPrice)}</td>
+                        <td className="py-3.5 px-3 text-right font-black text-[#262e2f]">{formatCurrency(item.totalPrice)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
 
-              {proposalTotals.additions > 0 && (
-                <div className="flex justify-between text-slate-600">
-                  <span>Acréscimos {additionReason ? `(${additionReason})` : ''}:</span>
-                  <span className="font-semibold text-slate-900">+{formatCurrency(proposalTotals.additions)}</span>
+              {/* Financial & Commercial Conditions Grid */}
+              <div className="grid grid-cols-2 gap-5 mb-7">
+                {/* Left: Payment Method & Official PIX */}
+                <div className="bg-rose-50/50 rounded-2xl border border-[#a32b2b]/30 p-5 space-y-3">
+                  <div className="text-xs font-black text-[#5a1515] flex items-center gap-1.5 uppercase tracking-wider">
+                    <svg className="w-4 h-4 text-[#a32b2b]" fill="currentColor" viewBox="0 0 20 20">
+                      <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z"/>
+                      <path fillRule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clipRule="evenodd"/>
+                    </svg>
+                    Condições Comerciais & Pagamento
+                  </div>
+                  
+                  <div className="text-xs text-slate-700 space-y-1">
+                    <div><b>Forma de Pagamento:</b> <span className="font-bold text-[#262e2f]">{proposalTotals.activePayment.name}</span></div>
+                    {installments > 1 && (
+                      <div className="text-xs text-[#a32b2b] font-black">
+                        Parcelamento: {installments}x de {formatCurrency(proposalTotals.installmentVal)}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-2.5 border-t border-[#a32b2b]/20">
+                    <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Chave PIX Oficial (Aleatória):</div>
+                    <div className="font-mono text-xs font-black text-[#a32b2b] bg-white px-2.5 py-1.5 rounded-lg border border-[#a32b2b]/30 mt-1 select-all break-all">
+                      83664d59-36a5-46ae-a2e6-768ad1e6db6a
+                    </div>
+                    <div className="text-[10px] text-slate-600 font-medium mt-1">
+                      Titular: Matheus Victor • VICCS Design
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right: Investment Breakdown & Total */}
+                <div className="bg-slate-50/80 rounded-2xl border border-slate-200 p-5 space-y-2 text-xs flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-slate-600">
+                      <span>Subtotal dos Serviços:</span>
+                      <span className="font-bold text-[#262e2f]">{formatCurrency(proposalTotals.subtotal)}</span>
+                    </div>
+
+                    {proposalTotals.additions > 0 && (
+                      <div className="flex justify-between text-slate-600">
+                        <span>Acréscimos {additionReason ? '(' + additionReason + ')' : ''}:</span>
+                        <span className="font-bold text-[#262e2f]">+{formatCurrency(proposalTotals.additions)}</span>
+                      </div>
+                    )}
+
+                    {proposalTotals.discount > 0 && (
+                      <div className="flex justify-between text-emerald-700">
+                        <span>Desconto Aplicado {discountReason ? '(' + discountReason + ')' : ''}:</span>
+                        <span className="font-bold text-emerald-700">-{formatCurrency(proposalTotals.discount)}</span>
+                      </div>
+                    )}
+
+                    {proposalTotals.feeAmount > 0 && (
+                      <div className="flex justify-between text-slate-600">
+                        <span>Taxas Operacionais ({proposalTotals.activePayment.name}):</span>
+                        <span className="font-bold text-[#262e2f]">+{formatCurrency(proposalTotals.feeAmount)}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="pt-3 border-t-2 border-[#a32b2b] flex justify-between items-center">
+                    <div>
+                      <div className="text-[10px] font-black uppercase tracking-wider text-slate-500">Investimento Total</div>
+                      <div className="text-[10px] text-[#5a1515] font-semibold">Valor Final Fechado</div>
+                    </div>
+                    <div className="text-2xl font-black text-[#a32b2b]">
+                      {formatCurrency(proposalTotals.totalFinal)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Observations & Standard Terms */}
+              {observations && (
+                <div className="bg-slate-50 rounded-xl border border-slate-200 p-4 mb-4 text-xs text-slate-700">
+                  <div className="font-bold text-[#262e2f] uppercase text-[10px] tracking-wider mb-1">Observações e Requisitos do Cliente:</div>
+                  <div className="leading-relaxed">{observations}</div>
                 </div>
               )}
 
-              {proposalTotals.discount > 0 && (
-                <div className="flex justify-between text-emerald-700">
-                  <span>Desconto Aplicado {discountReason ? `(${discountReason})` : ''}:</span>
-                  <span className="font-semibold text-emerald-700">-{formatCurrency(proposalTotals.discount)}</span>
-                </div>
-              )}
+              <div className="bg-slate-50/60 rounded-xl border border-slate-200/70 p-3.5 mb-6 text-[10px] text-slate-500 space-y-1 leading-relaxed">
+                <div>• <b>Início dos Trabalhos:</b> A execução inicia imediatamente após a confirmação do pedido/primeiro pagamento.</div>
+                <div>• <b>Garantia & Revisões:</b> Ajustes inclusos no escopo aprovado. Novas funcionalidades extras serão orçadas separadamente.</div>
+                <div>• <b>Validade da Proposta:</b> Valores e prazos são válidos por 15 dias corridos a partir da emissão.</div>
+              </div>
 
-              {proposalTotals.feeAmount > 0 && (
-                <div className="flex justify-between text-slate-600">
-                  <span>Taxas de Processamento ({proposalTotals.activePayment.name}):</span>
-                  <span className="font-semibold text-slate-900">+{formatCurrency(proposalTotals.feeAmount)}</span>
+              {/* Official Document Footer */}
+              <div className="pt-4 border-t border-slate-200 flex justify-between items-center text-[10px] text-slate-500">
+                <div className="flex items-center gap-2">
+                  <img src={BRAND_ASSETS.isotipoColor} alt="" className="w-5 h-5 object-contain" />
+                  <div>
+                    <span className="font-black text-[#262e2f]">VICCS DESIGN</span> • Estúdio de Criação, Design & Tecnologia
+                  </div>
                 </div>
-              )}
-
-              <div className="flex justify-between items-center pt-3 mt-2 border-t border-slate-300 text-sm">
-                <span className="font-black text-slate-950">INVESTIMENTO TOTAL:</span>
-                <span className="text-xl font-black text-purple-700">{formatCurrency(proposalTotals.totalFinal)}</span>
+                <div className="text-right">
+                  contato@viccs.com.br • <span className="font-bold text-[#a32b2b]">viccsdesign.vercel.app</span>
+                </div>
               </div>
             </div>
 
-            {/* Payment & PIX Info */}
-            <div className="bg-purple-50 p-6 rounded-xl border border-purple-200 mb-6 text-xs text-slate-800 space-y-2">
-              <div className="font-bold text-purple-900">Condições & Dados para Pagamento:</div>
-              <div><b>Forma Escolhida:</b> {proposalTotals.activePayment.name} {installments > 1 ? `(${installments}x de ${formatCurrency(proposalTotals.installmentVal)})` : ''}</div>
-              <div><b>Chave PIX (Aleatória):</b> <code className="bg-white px-2 py-0.5 rounded border border-purple-200 font-mono text-purple-900">83664d59-36a5-46ae-a2e6-768ad1e6db6a</code></div>
-              <div><b>Titular:</b> Matheus Victor / VICCS Design</div>
+            {/* Bottom Official Tricolor Stripe */}
+            <div className="w-full flex h-1.5">
+              <div className="w-1/2 bg-[#a32b2b]"></div>
+              <div className="w-1/4 bg-[#5a1515]"></div>
+              <div className="w-1/4 bg-[#262e2f]"></div>
             </div>
-
-            {observations && (
-              <div className="text-xs text-slate-600 border-t border-slate-200 pt-4">
-                <b>Observações:</b> {observations}
-              </div>
-            )}
           </div>
 
         </div>

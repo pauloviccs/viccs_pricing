@@ -1,25 +1,40 @@
-# Tech Stack — VICCS Pricing
+# Tech Stack — VICCS Pricing Pro
 
-Esta página detalha a pilha de tecnologia utilizada no projeto, bem como suas dependências externas via CDN.
+Esta página detalha a pilha completa de tecnologia utilizada na plataforma, incluindo bibliotecas de interface, utilitários visuais e serviços em nuvem.
 
 ## Stack Principal
 
 | Tecnologia | Função | Versão / Origem | Descrição |
 |---|---|---|---|
-| **HTML5** | Estruturação básica do documento | Nativo do Navegador | Elementos estruturais e ponto de montagem do React (`#root`). |
-| **Vanilla JavaScript (ES6+)** | Lógica de precificação, estado e interações | Nativo do Navegador | Utiliza recursos modernos como `Intl.NumberFormat`, Promises, ES Modules e APIs nativas. |
-| **React 18** | Renderização declarativa e UI reativa | CDN (`unpkg.com/react@18`) | Framework core da aplicação, permitindo estados fluidos e renderização de componentes reativos. |
-| **ReactDOM 18** | Renderização no DOM real | CDN (`unpkg.com/react-dom@18`) | Módulo de montagem do React no container principal do HTML. |
-| **Babel Standalone** | Transpilação JSX em tempo de execução | CDN (`unpkg.com/@babel/standalone`) | Traduz o JSX contido no bloco script diretamente no navegador, eliminando a necessidade de compiladores de linha de comando. |
-| **Tailwind CSS v3** | Sistema de estilos e design responsivo | CDN (`cdn.tailwindcss.com`) | Biblioteca utility-first para estilização rápida, responsiva e com suporte a efeitos visuais como glows, gradientes e dark-mode. |
-| **Google Fonts** | Tipografia | `fonts.googleapis.com` | Família de fontes **Inter** (pesos 400, 500, 600, 700) aplicada globalmente. |
-| **localStorage API** | Banco de dados cliente | Nativo do Navegador | Persistência simples para salvar as escolhas do usuário entre atualizações e recarregamentos. |
+| **HTML5** | Estruturação e Container | Nativo | Ponto de montagem da aplicação (`#root`) e metadados responsivos. |
+| **JavaScript (ES6+)** | Lógica de Negócio e Estado | Nativo | Programação funcional, manipulação de arrays/objetos e chamadas assíncronas. |
+| **React 18** | Camada Reativa e Componentes | CDN (`unpkg.com/react@18`) | Componentes funcionais, hooks (`useState`, `useEffect`, `useMemo`, `useRef`). |
+| **ReactDOM 18** | Renderizador DOM | CDN (`unpkg.com/react-dom@18`) | Renderização dos elementos visuais no DOM do navegador. |
+| **Babel Standalone** | Transpilador JSX Client-Side | CDN (`unpkg.com/@babel/standalone@7.26.2`) | Converte código JSX e ES6+ moderno em tempo real diretamente no navegador. |
+| **Tailwind CSS v3** | Design System Utility-First | CDN (`cdn.tailwindcss.com`) | Estilização reativa, classes de vidro fosco, sombras neon e dark theme profundo. |
+| **Supabase JS Client v2** | SDK de Nuvem (Auth & Database) | CDN (`cdn.jsdelivr.net/.../supabase.min.js`) | Gerenciamento de sessões de usuário, autorização e persistência relacional. |
+| **html2canvas v1.4.1** | Captura de Interface para Imagem | CDN (`cdnjs.cloudflare.com/.../html2canvas.min.js`) | Renderiza os nós do DOM da proposta em canvas de alta resolução para PDF. |
+| **jsPDF v2.5.1** | Compilador de Documentos PDF | CDN (`cdnjs.cloudflare.com/.../jspdf.umd.min.js`) | Gera o arquivo PDF multipágina A4 com formatação contínua e download direto. |
+| **Google Fonts** | Tipografia Oficial | `fonts.googleapis.com` | Família tipográfica **Inter** (pesos 400, 500, 600, 700). |
+| **localStorage API** | Armazenamento e Cache Offline | Nativo | Garante tolerância a falhas na internet, preservando carrinho e dados digitados. |
+
+---
 
 ## Dependências e Endpoints de CDN
 
-No cabeçalho do `index.html`, as seguintes URLs são utilizadas:
-1. **Tailwind CSS:** `https://cdn.tailwindcss.com`
-2. **React:** `https://unpkg.com/react@18/umd/react.production.min.js`
-3. **ReactDOM:** `https://unpkg.com/react-dom@18/umd/react-dom.production.min.js`
-4. **Babel Standalone:** `https://unpkg.com/@babel/standalone/babel.min.js`
-5. **Google Fonts (Inter):** `https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap`
+```html
+<!-- Tailwind CSS v3 -->
+<script src="https://cdn.tailwindcss.com"></script>
+
+<!-- Supabase JS Client v2 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
+<!-- Exportação em PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<!-- React 18, ReactDOM 18 & Babel Standalone -->
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone@7.26.2/babel.min.js"></script>
+```

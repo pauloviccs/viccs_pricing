@@ -1,52 +1,66 @@
-# Arquitetura do Sistema
+# Arquitetura do Sistema — VICCS Pricing Pro
 
-## Padrão Arquitetural: Single-File Application (SFA)
-O **VICCS Pricing** foi concebido como uma aplicação cliente-side de arquivo único (`index.html`), projetada para ser extremamente rápida de carregar, rodar localmente sem necessidade de compiladores locais, e facilmente hospedável em serviços estáticos como Vercel ou GitHub Pages.
+## Padrão Arquitetural: Single-File Application (SFA) Reativa
+
+O **VICCS Pricing Pro** foi concebido como uma aplicação cliente-side de alta performance empacotada em arquivo único (`index.html`), com transpilação JSX em tempo de execução via Babel Standalone, gerenciamento de estado unificado via React 18 e comunicação direta com a nuvem (Supabase).
 
 ```mermaid
-graph TD
-    A[index.html] --> B[React 18 CDN]
-    A --> C[Tailwind CSS CDN]
-    A --> D[Babel Standalone CDN]
-    B --> E[PricingApp Component]
-    E --> F[State: selectedServiceId, complexity, etc.]
-    E --> G[Calculation Engine]
-    E --> H[UI: Tabs, Cards, Sliders, Summary Panel]
-    F -->|Salva e Lê| I[localStorage: viccs_*]
-    G -->|Exporta texto| J[Clipboard API]
+flowchart TD
+    subgraph BrowserClient ["Navegador (index.html)"]
+        UI[Interface Dark Liquid Glass]
+        Auth["Auth & Permissões (Admin Guard)"]
+        Lego["Lego Engine (Precificação Paramétrica)"]
+        Cart["Carrinho Multi-Itens"]
+        Calc["Cálculo de Totais & Ajustes Comerciais"]
+        PDF["Renderizador PDF (html2canvas + jsPDF)"]
+        Cache[("localStorage (Fallback Offline)")]
+    end
+
+    subgraph Cloud ["Supabase Cloud"]
+        SAuth["Supabase Auth (GoTrue)"]
+        DB[("PostgreSQL")]
+        Profiles["profiles (RLS)"]
+        Proposals["proposals (RLS)"]
+        Items["proposal_items (RLS)"]
+    end
+
+    UI --> Auth
+    Auth -->|Login/Cadastro| SAuth
+    SAuth -->|Verificação de Cargo| Profiles
+    UI --> Lego
+    Lego -->|Adicionar Item| Cart
+    Cart --> Calc
+    Calc -->|Auto-save local| Cache
+    Calc -->|Salvar Proposta| Proposals
+    Cart -->|Gravar Itens| Items
+    Calc -->|Exportar Proposta| PDF
+    Proposals -->|Carregar Histórico| UI
 ```
 
-## Componentes e Tecnologias Core
+---
 
-### 1. In-Browser Transpilation (Babel)
-- **Babel Standalone** (`@babel/standalone` via CDN) é carregado no cabeçalho do documento.
-- O script principal é definido com `type="text/babel"`, permitindo o uso direto da sintaxe JSX e ES6+ sem a necessidade de build steps complexos (Webpack, Vite, esbuild).
+## Componentes e Módulos Principais
 
-### 2. UI Reativa (React 18)
-- O React é importado através de UMDs do unpkg.
-- **Gerenciamento de Estado**: Totalmente contido no componente `PricingApp` usando hooks nativos (`useState`, `useEffect`, `useMemo`).
-- **Estados Persistidos**:
-  - `selectedServiceId`: Identificador do serviço selecionado.
-  - `complexity`: Nível de complexidade do projeto.
-  - `deadline`: Urgência ou prazo de entrega.
-  - `extraRevisions`: Quantidade de revisões adicionais.
-  - `estimatedHours`: Horas estimadas para cálculo de valor por hora.
-  - `paymentMethod`: Método de pagamento escolhido.
-  - `installments`: Quantidade de parcelas (para cartão parcelado).
-  - `dimensionM2`: Dimensão em m² para serviços de impressão.
-  - `observacoes`: Texto livre para notas.
+### 1. Sistema de Autenticação e Autorização (Supabase)
+- **Camada de Acesso:** Usuários não autenticados visualizam a tela de Login/Cadastro em card Liquid Glass.
+- **Admin Guard:** Após login com e-mail e senha, o perfil do usuário é consultado na tabela `public.profiles`. Usuários com `is_admin = false` entram em tela de aprovação pendente.
+- **Dev Mode Bypass:** Para desenvolvimento e testes locais rápidos sem conexão de rede, um atalho local permite operar em modo de administrador emulado.
 
-### 3. Mecanismo de Cálculo de Preço (Calculation Engine)
-Toda a lógica de precificação é centralizada em um bloco `useMemo` reativo que recalcula o subtotal e o total geral com base nos estados:
-- **Serviços de Área**: Se a categoria do serviço for `impressao`, o preço base é calculado multiplicando `basePrice` por `dimensionM2`. Para outros serviços, o preço base é fixo.
-- **Multiplicadores**: Aplicam-se as taxas acumuladas de complexidade e urgência.
-- **Revisões**: Soma-se `revisions * R$50`.
-- **Taxas de Pagamento**: Acréscimos de tarifas de processamento aplicadas sobre o subtotal.
+### 2. Motor de Precificação Polimórfica (Lego Engine)
+A precificação adapta seus parâmetros dinamicamente conforme a categoria do serviço selecionado:
+- **Motion Design (`motion_custom`):**
+  - Valor calculado por segundo: $V(s) = s \times T_{\text{estilo}} + A_{\text{sound}}$, onde $T_{\text{estilo}} \in \{15, 22, 35\}$ e $A_{\text{sound}} = 120$.
+- **Impressão em Grandes Formatos (`impressao`):**
+  - Valor calculado por área: $V(\text{área}) = (L \times A) \times P_{\text{metro}}$, com suporte a entrada em metros, centímetros e milímetros.
+- **Serviços Standard (Identidade Visual, Social Media, Manutenção):**
+  - Preço base multiplicado pelos fatores de complexidade ($0.9\times$ a $1.6\times$), prazo ($0.95\times$ a $1.6\times$) e revisões extras ($R\$ 50$ cada).
 
-### 4. Persistência de Dados
-- Realizada inteiramente no `localStorage` sob o prefixo `viccs_`.
-- Sincronização automatizada por meio de um `useEffect` observador de estados.
+### 3. Carrinho Multi-Itens & Ajustes Comerciais
+- Permite empilhar múltiplos itens no mesmo orçamento com snapshot de configurações no momento da inserção.
+- Suporte a acréscimos operacionais (+R$) e descontos (-R$) com justificativas textuais explícitas repassadas para a proposta.
+- Cálculo de formas de pagamento com taxas comerciais (PIX À Vista, PIX 50%+50%, Cartão 1x, Cartão Parcelado de 2x a 12x).
 
-### 5. Exportação de Proposta (Clipboard)
-- Uso da API `navigator.clipboard.writeText()` moderna.
-- Fallback legado implementado via elemento temporário `<textarea>` e `document.execCommand('copy')` para máxima compatibilidade entre dispositivos.
+### 4. Engine de Exportação & Compartilhamento
+- **Geração de PDF:** Renderização visual contínua via `html2canvas` com paginação A4 inteligente gerenciada por `jsPDF`.
+- **Compartilhamento WhatsApp:** Formatação estruturada em texto com quebras de linha limpas, detalhamento de itens, prazos, formas de pagamento e chave PIX.
+- **Drawer de Histórico:** Consulta assíncrona com busca por cliente em tempo real conectada à tabela `public.proposals`.
