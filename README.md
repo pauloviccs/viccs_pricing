@@ -18,7 +18,10 @@ A aplicação utiliza os elementos e a paleta oficial da Viccs Design:
 - **Dark Maroon (`#4e1617`):** Superfícies escuras ricas em detalhes.
 - **Gunmetal Charcoal (`#262e2f`) & Titanium (`#2d3636`):** Tons metálicos para contraste sóbrio.
 - **Deep Obsidian (`#08090b`):** Fundo imersivo com superfícies Liquid Glass (`backdrop-blur-2xl bg-[rgba(18,20,25,0.75)]`).
-- **Logotipos Vetoriais:** Ícone oficial `VICCS_Design_Icon_BWR.svg` na navbar e na tela de login; logotipo horizontal `VICCS_Design_Logo_txt.svg` na exportação de PDF.
+- **Logotipos Vetoriais:** 
+  - Ícone oficial `VICCS_Design_Icon_BWR.svg` na navbar e na tela de login.
+  - Logotipo horizontal tipográfico oficial `VICCS_Design_Logo_txt.svg` na exportação de PDF.
+  - Isótipo oficial colorido `VICCS_Design_Isotipo.svg` no card de autenticação da proposta e no rodapé timbrado.
 
 ---
 
@@ -40,7 +43,13 @@ A aplicação utiliza os elementos e a paleta oficial da Viccs Design:
   - **Identidade & Design, Social Media, Pacotes Mensais, Estampas, Grandes Formatos e Manutenções.**
 - **Carrinho Multi-Itens & Ajustes Comerciais:** Adicione múltiplos serviços ao mesmo orçamento com acréscimos e descontos formais justificados.
 - **Condições de Pagamento Dinâmicas:** PIX À Vista, PIX 50%+50%, Cartão 1x (+4%) e Cartão Parcelado (+6%, de 2x a 12x parcelas).
-- **Exportação Multipágina em PDF:** Renderização de alta definição via `html2canvas` + `jsPDF` com logotipo oficial e chave PIX embutida.
+- **Exportação Multipágina em PDF com Padrão Executivo de Papel Timbrado:** 
+  - Logotipo tipográfico corporativo oficial e slogan institucional.
+  - Isótipo oficial em cores reais e marca d'água de autenticidade (opacidade de 3.5%).
+  - Faixas tricolores de marca nas margens (Carmim, Vinho e Gunmetal).
+  - Tabela de escopo detalhado com cabeçalho Gunmetal sólido e badges de categoria.
+  - Chave PIX oficial destacada e condições comerciais detalhadas.
+  - Renderização de alta fidelidade contínua via `html2canvas` + `jsPDF`.
 - **Autenticação Segura via Supabase:** Acesso com e-mail e senha, restrito a administradores aprovados. Fallback offline automático no `localStorage`.
 
 ---

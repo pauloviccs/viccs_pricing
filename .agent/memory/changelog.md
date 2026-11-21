@@ -1,5 +1,14 @@
 # Changelog
 
+## 2026-11-21 — Sincronização de Visão Geral & Memória do Agente (Release 2.1)
+
+### Governança & Memória (.agent Cortex)
+- **Atualização do Project Status Overview:** Documento `PROJECT_STATUS.md` e `README.md` atualizados com todo o ecossistema de 34 serviços, layout responsivo mobile e template executivo de PDF.
+- **Limpeza de Active Task:** Tarefas ativas concluídas e arquivadas; `active_task.md` definido como livre/em espera para novas demandas.
+- **Commit & Push Remoto:** Alterações consolidadas no commit `9671ce3` e enviadas para `origin/master` (`https://github.com/pauloviccs/viccs_pricing.git`).
+
+---
+
 ## 2026-11-21 — Reestruturação da Identidade Visual Oficial nos Orçamentos em PDF
 
 ### Identidade Visual & Engenharia de Propostas (PDF)

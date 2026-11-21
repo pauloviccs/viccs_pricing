@@ -4,22 +4,23 @@
 VICCS Pricing Pro
 
 ## Description
-Plataforma SaaS de engenharia e gestão de orçamentos comerciais da **Viccs Design**. A aplicação opera como um montador de propostas inteligente (estilo carrinho de compras modular), permitindo o empilhamento de múltiplos serviços (Motion Design, Identidade Visual, Gráfica & Papelaria, Web Development, Sistemas & Software SaaS/B2B, Social Media, Impressão de Grandes Formatos e Manutenção), precificação paramétrica em tempo real, ajustes comerciais com justificativa formal, autenticação restrita via Supabase Auth com validação de administrador, sincronização em banco de dados relacional (PostgreSQL/Supabase), histórico de propostas salvas com busca rápida e exportação contínua de PDF multipágina com chave PIX embutida.
+Plataforma SaaS de engenharia e gestão de orçamentos comerciais da **Viccs Design**. A aplicação opera como um montador de propostas inteligente (estilo carrinho de compras modular), permitindo o empilhamento de múltiplos serviços (Motion Design, Identidade Visual, Gráfica & Papelaria, Web Development, Sistemas & Software SaaS/B2B, Social Media, Impressão de Grandes Formatos e Manutenção), precificação paramétrica em tempo real, ajustes comerciais com justificativa formal, autenticação restrita via Supabase Auth com validação de administrador, sincronização em banco de dados relacional (PostgreSQL/Supabase), histórico de propostas salvas com busca rápida e exportação contínua de PDF multipágina em padrão executivo de papel timbrado.
 
-A interface segue rigorosamente a **Identidade Visual Oficial (IDV) da Viccs Design**, utilizando a paleta nobre Crimson & Wine (`#a32b2b`, `#5a1515`, `#262e2f`), superfícies Dark Liquid Glass, logotipo vetorial e layout totalmente responsivo para mobile (iOS/Android), tablets e desktop.
+A interface segue rigorosamente a **Identidade Visual Oficial (IDV) da Viccs Design**, utilizando a paleta nobre Crimson & Wine (`#a32b2b`, `#5a1515`, `#262e2f`), superfícies Dark Liquid Glass, logotipo tipográfico corporativo, isótipo oficial em cores reais, marca d'água sutil e layout totalmente responsivo para mobile (iOS/Android), tablets e desktop.
 
 ## Tech Stack
 - Languages: HTML5, JavaScript (ES6+, JSX), SQL (PostgreSQL)
 - Frameworks: React 18 (via CDN), ReactDOM 18 (via CDN)
 - Tools: Babel Standalone v7 (via CDN), Tailwind CSS v3 (via CDN), html2canvas v1.4.1 (via CDN), jsPDF v2.5.1 (via CDN), Supabase JS Client v2 (UMD via CDN)
 - Services: Supabase (Auth, PostgreSQL Database, Storage), localStorage (Cache/Fallback Offline), Google Fonts (Inter)
-- Brand Assets: Vetores oficiais em `.agent/assets/logo/` (`VICCS_Design_Icon_BWR.svg`, `VICCS_Design_Logo_txt.svg`)
+- Brand Assets: Vetores oficiais em `.agent/assets/logo/` (`VICCS_Design_Icon_BWR.svg`, `VICCS_Design_Icon_WR.svg`, `VICCS_Design_Logo_txt.svg`, `VICCS_Design_Logo_txt_WHITE.svg`, `VICCS_Design_Isotipo.svg`, `VICCS_Design_Isotipo_WHITE.svg`, `VICCS_ColorsLOGO.svg`)
 
 ## Folder Structure
 ```text
 viccs-pricing/
 ├── .agent/
 │   ├── assets/
+│   │   ├── additional_brand_base64.json
 │   │   ├── brand_base64.json
 │   │   └── logo/
 │   │       ├── VICCS_ColorsLOGO.svg
@@ -33,7 +34,9 @@ viccs-pricing/
 │   ├── backup/
 │   │   ├── index_backup.html
 │   │   ├── index_backup_v2.html
-│   │   └── index_backup_v3.html
+│   │   ├── index_backup_v3.html
+│   │   ├── index_backup_v4.html
+│   │   └── update_index.js
 │   ├── context/
 │   │   ├── architecture.md
 │   │   ├── database_schema.md
@@ -59,7 +62,9 @@ viccs-pricing/
 │       ├── create_component_skill.md
 │       └── review_pr_skill.md
 ├── .agents/
-├── apply_brand_idv.js
+│   └── skills/
+├── base64_png.txt
+├── base64_svg_white.txt
 ├── index.html
 ├── README.md
 ├── skills-lock.json
@@ -72,12 +77,15 @@ viccs-pricing/
 - **Cores da Marca:**
   - *Crimson Primário (`#a32b2b`):* Acento de destaque, botões de ação e sombras difusas `shadow-glow-crimson`.
   - *Deep Wine (`#5a1515`):* Profundidade visual em gradientes e botões secundários.
+  - *Dark Maroon (`#4e1617`):* Superfícies de alto contraste e transição.
   - *Gunmetal Charcoal (`#262e2f`) & Titanium (`#2d3636`):* Superfícies metálicas e contrastes sóbrios.
-  - *Deep Obsidian (`#08090b`):* Fundo escuro imersivo.
-- **Logotipos Oficiais:**
+  - *Deep Obsidian (`#08090b`):* Fundo escuro imersivo com acabamento Liquid Glass.
+- **Logotipos Oficiais Vetoriais:**
   - Ícone de topo e Login: `VICCS_Design_Icon_BWR.svg`.
   - Proposta Comercial (PDF): `VICCS_Design_Logo_txt.svg` em alta definição para impressão A4.
-- **Sem Duplicações:** Tipografia e logos distribuídos cirurgicamente sem elementos repetidos.
+  - Isótipo Oficial em Cores Reais: `VICCS_Design_Isotipo.svg` no card de autenticação da proposta e no rodapé.
+  - Marca D'Água Sutil: `VICCS_Design_Isotipo.svg` aplicado no centro do documento com opacidade 3.5% e rotação de -4°.
+  - Faixas Tricolores: Barras decorativas proporcionais de marca no topo e base do documento.
 
 ### 2. Responsividade Total & Otimização Mobile (iOS, Android, Tablet)
 - **Top Navbar:** Fixa com efeito glassmorphism e acesso rápido a Histórico e Carrinho.
@@ -90,11 +98,11 @@ viccs-pricing/
 ### 4. Motor de Precificação Polimórfica (34 serviços em 11 categorias)
 - Módulos específicos para Motion Design (segundos + estilos), Grandes Formatos (m²) e Standard (Gráfica, Web Development, Software SaaS B2B, Social Media, etc.). Piso mínimo de R$ 50,00 respeitado.
 
-### 5. Carrinho Multi-Itens & Exportação
-- Empilhamento de serviços, ajustes com justificativa, persistência local/Supabase e geração de PDF contínuo com dados PIX.
+### 5. Carrinho Multi-Itens & Exportação Executiva
+- Empilhamento de serviços, ajustes com justificativa, persistência local/Supabase e geração de PDF em padrão de papel timbrado de alto padrão com chave PIX embutida.
 
 ## Estado Atual do Projeto
-- **Status Operacional:** Completo, testado, 100% responsivo e alinhado à IDV da Viccs Design.
+- **Status Operacional:** Completo, testado em navegador via Chrome DevTools MCP, 100% responsivo e sincronizado com o repositório remoto Git (`https://github.com/pauloviccs/viccs_pricing.git` branch `master`).
 
 ---
 *Sincronizado em: 2026-11-21*
