@@ -1,5 +1,20 @@
 # Changelog
 
+## 2026-11-23 — Padronização de Logos e Dados Comerciais Oficiais no PDF de Orçamento
+
+### Correções no PDF & Dados Comerciais
+- **Chave PIX e Titularidade Atualizadas:** Chave alterada para `049.081.945-13` (CPF) e titular para `Paulo Vinicios Oliveira da Silva` (tanto no template do PDF quanto na função de cópia de resumo para WhatsApp).
+- **Padronização Exclusiva de Duas Logos (Zero Cortes ou Sobreposições):**
+  - **Cabeçalho (Esquerda):** `VICCS_Design_Logo_txt.svg` (`BRAND_ASSETS.logoTxtDark`) com dimensões explícitas injetadas no SVG (`width="1436.55" height="397.12"`), renderizado com aspect-ratio exato (250x69px), sem `object-fit: contain` (que gerava recorte no html2canvas), sem cortes e sem distorção.
+  - **Selo da Proposta Comercial (Direita) & Rodapé Oficial:** `VICCS_Design_Icon_BWR.svg` (`BRAND_ASSETS.iconBWR`) com dimensões explícitas (`width="717.09" height="717.09"`), aplicado no card superior (48x48px) e no rodapé (22x22px).
+  - **Remoção de Marcas d'Água / Sobreposições:** Eliminada qualquer marca d'água no fundo que sobrepusesse os elementos ou gerasse ruído visual.
+- **Responsável Técnico / Emissor Corrigido:** Atualizado para `Paulo Vinicios O. Silva - VICCS Design`, e-mail `pauloviccsdesign@gmail.com` e portfolio `viccsdesign.vercel.app`.
+- **E-mail Institucional no Rodapé:** Ajustado para `pauloviccsdesign@gmail.com`.
+- **Limpeza no Cabeçalho:** Remoção do rótulo desnecessário *"Identidade Visual Oficial"*.
+- **Validação Automatizada:** Testado com Chrome DevTools MCP e `html2canvas`, confirmando renderização impecável sem cortes e sem sobreposições.
+
+---
+
 ## 2026-11-21 — Sincronização de Visão Geral & Memória do Agente (Release 2.1)
 
 ### Governança & Memória (.agent Cortex)

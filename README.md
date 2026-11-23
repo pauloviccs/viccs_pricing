@@ -82,4 +82,4 @@ Como a aplicação é uma *Single-File Application* baseada em CDN, basta abrir 
 4. Execute o script para ativar a persistência em nuvem e permissões de administrador.
 
 ---
-*Atualizado em: 21 de Novembro de 2026*
+*Atualizado em: 23 de Novembro de 2026*

@@ -22,15 +22,17 @@ viccs-pricing/
 │   ├── assets/
 │   │   ├── additional_brand_base64.json
 │   │   ├── brand_base64.json
-│   │   └── logo/
-│   │       ├── VICCS_ColorsLOGO.svg
-│   │       ├── VICCS_Design_3D_Icon_BWR.svg
-│   │       ├── VICCS_Design_Icon_BWR.svg
-│   │       ├── VICCS_Design_Icon_WR.svg
-│   │       ├── VICCS_Design_Isotipo.svg
-│   │       ├── VICCS_Design_Isotipo_WHITE.svg
-│   │       ├── VICCS_Design_Logo_txt.svg
-│   │       └── VICCS_Design_Logo_txt_WHITE.svg
+│   │   ├── logo/
+│   │   │   ├── VICCS_ColorsLOGO.svg
+│   │   │   ├── VICCS_Design_3D_Icon_BWR.svg
+│   │   │   ├── VICCS_Design_Icon_BWR.svg
+│   │   │   ├── VICCS_Design_Icon_WR.svg
+│   │   │   ├── VICCS_Design_Isotipo.svg
+│   │   │   ├── VICCS_Design_Isotipo_WHITE.svg
+│   │   │   ├── VICCS_Design_Logo_txt.svg
+│   │   │   └── VICCS_Design_Logo_txt_WHITE.svg
+│   │   └── pdf/
+│   │       └── Proposta_Lucineide_Oliveira_VICCS.pdf
 │   ├── backup/
 │   │   ├── index_backup.html
 │   │   ├── index_backup_v2.html
@@ -103,6 +105,7 @@ viccs-pricing/
 
 ## Estado Atual do Projeto
 - **Status Operacional:** Completo, testado em navegador via Chrome DevTools MCP, 100% responsivo e sincronizado com o repositório remoto Git (`https://github.com/pauloviccs/viccs_pricing.git` branch `master`).
+- **Uso em Produção:** Propostas reais geradas atestam a estabilidade e conformidade da IDV no PDF executivo.
 
 ---
-*Sincronizado em: 2026-11-21*
+*Sincronizado em: 2026-11-23*
