@@ -4,15 +4,15 @@
 VICCS Pricing Pro
 
 ## Description
-Plataforma SaaS de engenharia e gestão de orçamentos comerciais da **Viccs Design**. A aplicação opera como um montador de propostas inteligente (estilo carrinho de compras modular), permitindo o empilhamento de múltiplos serviços (Motion Design, Identidade Visual, Gráfica & Papelaria, Web Development, Sistemas & Software SaaS/B2B, Social Media, Impressão de Grandes Formatos e Manutenção), precificação paramétrica em tempo real, ajustes comerciais com justificativa formal, autenticação restrita via Supabase Auth com validação de administrador, sincronização em banco de dados relacional (PostgreSQL/Supabase), histórico de propostas salvas com busca rápida e exportação contínua de PDF multipágina em padrão executivo de papel timbrado.
+Plataforma SaaS corporativa para engenharia, montagem e exportação de propostas e orçamentos comerciais da **Viccs Design**. A aplicação funciona como um configurador modular de serviços em lote (estilo carrinho multi-itens), suportando 34 serviços divididos em 11 categorias de atuação (Motion Design, Identidade Visual, Gráfica & Papelaria Nobre, Web Development, Sistemas & Software SaaS/B2B, Social Media, Impressão em Grandes Formatos e Manutenções Técnicas), precificação paramétrica em tempo real, ajustes comerciais de acréscimo e desconto formalmente justificados, condições flexíveis de parcelamento (PIX e Cartão), autenticação via Supabase Auth com controle de permissão por perfil de administrador, persistência relacional (PostgreSQL) com fallback local (`localStorage`) e exportação de propostas em PDF multipágina no padrão executivo de papel timbrado.
 
-A interface segue rigorosamente a **Identidade Visual Oficial (IDV) da Viccs Design**, utilizando a paleta nobre Crimson & Wine (`#a32b2b`, `#5a1515`, `#262e2f`), superfícies Dark Liquid Glass, logotipo tipográfico corporativo, isótipo oficial em cores reais, marca d'água sutil e layout totalmente responsivo para mobile (iOS/Android), tablets e desktop.
+A interface e o documento PDF gerado seguem estritamente a **Identidade Visual Oficial da Viccs Design**, empregando a paleta de cores nobre Crimson & Wine (`#a32b2b`, `#5a1515`, `#4e1617`, `#262e2f`, `#2d3636`), acabamento Dark Liquid Glass, réguas tricolores institucionais e uso padronizado dos logotipos vetoriais oficiais sem cortes ou sobreposições.
 
 ## Tech Stack
 - Languages: HTML5, JavaScript (ES6+, JSX), SQL (PostgreSQL)
-- Frameworks: React 18 (via CDN), ReactDOM 18 (via CDN)
-- Tools: Babel Standalone v7 (via CDN), Tailwind CSS v3 (via CDN), html2canvas v1.4.1 (via CDN), jsPDF v2.5.1 (via CDN), Supabase JS Client v2 (UMD via CDN)
-- Services: Supabase (Auth, PostgreSQL Database, Storage), localStorage (Cache/Fallback Offline), Google Fonts (Inter)
+- Frameworks: React 18 (UMD via CDN), ReactDOM 18 (UMD via CDN)
+- Tools: Babel Standalone v7 (CDN), Tailwind CSS v3 (CDN), html2canvas v1.4.1 (CDN), jsPDF v2.5.1 (CDN), Supabase JS Client v2 (UMD CDN)
+- Services: Supabase (Authentication, PostgreSQL Database, Storage), Web Storage API (localStorage Fallback), Google Fonts (Inter)
 - Brand Assets: Vetores oficiais em `.agent/assets/logo/` (`VICCS_Design_Icon_BWR.svg`, `VICCS_Design_Icon_WR.svg`, `VICCS_Design_Logo_txt.svg`, `VICCS_Design_Logo_txt_WHITE.svg`, `VICCS_Design_Isotipo.svg`, `VICCS_Design_Isotipo_WHITE.svg`, `VICCS_ColorsLOGO.svg`)
 
 ## Folder Structure
@@ -76,36 +76,45 @@ viccs-pricing/
 ## Arquitetura & Implementação
 
 ### 1. Sistema de Identidade Visual Oficial (Crimson & Wine IDV)
-- **Cores da Marca:**
+- **Paleta Cromática Oficial:**
   - *Crimson Primário (`#a32b2b`):* Acento de destaque, botões de ação e sombras difusas `shadow-glow-crimson`.
-  - *Deep Wine (`#5a1515`):* Profundidade visual em gradientes e botões secundários.
-  - *Dark Maroon (`#4e1617`):* Superfícies de alto contraste e transição.
-  - *Gunmetal Charcoal (`#262e2f`) & Titanium (`#2d3636`):* Superfícies metálicas e contrastes sóbrios.
-  - *Deep Obsidian (`#08090b`):* Fundo escuro imersivo com acabamento Liquid Glass.
-- **Logotipos Oficiais Vetoriais:**
-  - Ícone de topo e Login: `VICCS_Design_Icon_BWR.svg`.
-  - Proposta Comercial (PDF): `VICCS_Design_Logo_txt.svg` em alta definição para impressão A4.
-  - Isótipo Oficial em Cores Reais: `VICCS_Design_Isotipo.svg` no card de autenticação da proposta e no rodapé.
-  - Marca D'Água Sutil: `VICCS_Design_Isotipo.svg` aplicado no centro do documento com opacidade 3.5% e rotação de -4°.
-  - Faixas Tricolores: Barras decorativas proporcionais de marca no topo e base do documento.
+  - *Deep Wine (`#5a1515`):* Transições tonais, gradientes e superfícies nobres.
+  - *Dark Maroon (`#4e1617`):* Tons escuros profundos e contraste suave.
+  - *Gunmetal Charcoal (`#262e2f`) & Titanium (`#2d3636`):* Superfícies metálicas e cabeçalhos de tabela.
+  - *Deep Obsidian (`#08090b`):* Fundo imersivo com acabamento Liquid Glass.
+- **Logotipos Vetoriais Padronizados:**
+  - *Navbar & Login Hero:* Ícone vetorial oficial `VICCS_Design_Icon_BWR.svg` de alta definição.
+  - *Cabeçalho do PDF (Esquerda):* Logotipo tipográfico `VICCS_Design_Logo_txt.svg` (`250px x 69px`), com atributos intrínsecos de largura e altura injetados no SVG, garantindo proporção matemática 3.61:1 sem corte por renderizadores.
+  - *Badge da Proposta (PDF - Direita):* Ícone oficial `VICCS_Design_Icon_BWR.svg` (`48px x 48px`) em cartão de identificação da proposta.
+  - *Rodapé Institucional do PDF:* Ícone oficial `VICCS_Design_Icon_BWR.svg` (`22px x 22px`) com dados de contato oficiais.
+  - *Faixas Tricolores Oficiais:* Faixas decorativas proporcionais de marca (Carmim, Vinho e Gunmetal) posicionadas no topo e na base do documento.
+  - *Sem Sobreposição ou Marcas d'Água Invasivas:* Elementos de fundo que geravam ruído ou colisão foram removidos.
 
-### 2. Responsividade Total & Otimização Mobile (iOS, Android, Tablet)
+### 2. Dados Comerciais & Emissão Padronizados
+- **Chave PIX Oficial:** CPF `049.081.945-13`
+- **Titularidade:** Paulo Vinicios Oliveira da Silva • VICCS Design
+- **Responsável Técnico / Emissor:** Paulo Vinicios O. Silva - VICCS Design
+- **E-mail Institucional:** pauloviccsdesign@gmail.com
+- **Website / Portfolio:** viccsdesign.vercel.app
+
+### 3. Responsividade Total & Otimização Mobile (iOS, Android, Tablet)
 - **Top Navbar:** Fixa com efeito glassmorphism e acesso rápido a Histórico e Carrinho.
 - **Barra Flutuante Mobile:** Em telas `< lg`, uma barra inferior fixa mantém o total e o botão de adicionar/visualizar sempre ao alcance do polegar.
 - **Mobile Cart Drawer:** Gaveta lateral fluida para gerenciar itens, alterar quantidades e exportar sem rolagem excessiva.
+- **Áreas de Toque:** Hit targets com no mínimo 44px de altura/largura.
 
-### 3. Autenticação & Permissões (Supabase Auth)
+### 4. Autenticação & Permissões (Supabase Auth)
 - Login/Cadastro seguro com e-mail e senha, restrição de acesso até liberação por administrador (`is_admin = true`). Modo preview local para desenvolvimento ágil.
 
-### 4. Motor de Precificação Polimórfica (34 serviços em 11 categorias)
+### 5. Motor de Precificação Polimórfica (34 serviços em 11 categorias)
 - Módulos específicos para Motion Design (segundos + estilos), Grandes Formatos (m²) e Standard (Gráfica, Web Development, Software SaaS B2B, Social Media, etc.). Piso mínimo de R$ 50,00 respeitado.
 
-### 5. Carrinho Multi-Itens & Exportação Executiva
-- Empilhamento de serviços, ajustes com justificativa, persistência local/Supabase e geração de PDF em padrão de papel timbrado de alto padrão com chave PIX embutida.
+### 6. Carrinho Multi-Itens & Exportação Executiva
+- Empilhamento de serviços, ajustes com justificativa, persistência local/Supabase e geração de PDF em padrão de papel timbrado de alto padrão com renderização contínua via `html2canvas` + `jsPDF`.
 
 ## Estado Atual do Projeto
 - **Status Operacional:** Completo, testado em navegador via Chrome DevTools MCP, 100% responsivo e sincronizado com o repositório remoto Git (`https://github.com/pauloviccs/viccs_pricing.git` branch `master`).
-- **Uso em Produção:** Propostas reais geradas atestam a estabilidade e conformidade da IDV no PDF executivo.
+- **Validação de Produção:** Renderização do PDF validada com proporção de imagem nítida, zero erros de console e conformidade com os dados comerciais oficiais.
 
 ---
 *Sincronizado em: 2026-11-23*

@@ -1,13 +1,14 @@
-# Active Task — Nenhuma Tarefa Ativa (Aguardando Nova Demanda)
+# Active Task — Sincronização de Estado & Memória Concluída
 
 ## Status Atual
-- **Estado:** Livre / Em Espera (Idle)
+- **Estado:** Livre / Sincronizado (Idle)
 - **Última Entrega Concluída:**
-  - Expansão do catálogo para 34 serviços (Gráfica, Web Development e Software SaaS/B2B).
-  - Overhaul visual completo com a identidade oficial da VICCS (Crimson `#a32b2b`, Deep Wine `#5a1515`, Gunmetal `#262e2f`).
-  - Responsividade universal com barra de ações flutuante mobile e gaveta (*Drawer*) de carrinho.
-  - Template de proposta comercial em PDF reestruturado no padrão executivo de papel timbrado (logotipo tipográfico oficial, isótipo colorido, marca d'água de 3.5%, réguas tricolores e caixa PIX oficial).
-  - Sincronização completa de governança, `README.md` e push comitado para o repositório remoto Git (`https://github.com/pauloviccs/viccs_pricing.git` branch `master`).
+  - Padronização de logotipos vetoriais no PDF de orçamento eliminando cortes e sobreposições (`VICCS_Design_Logo_txt.svg` na esquerda em 250x69px e `VICCS_Design_Icon_BWR.svg` no badge e rodapé).
+  - Remoção de marcas d'água invasivas no documento PDF.
+  - Correção dos dados comerciais: Chave PIX (CPF `049.081.945-13`), Titular (`Paulo Vinicios Oliveira da Silva`), Responsável Técnico / Emissor (`Paulo Vinicios O. Silva - VICCS Design`, `pauloviccsdesign@gmail.com`, `viccsdesign.vercel.app`) e rodapé.
+  - Remoção do rótulo desnecessário `"Identidade Visual Oficial"` no cabeçalho.
+  - Testes automatizados via Chrome DevTools MCP com `html2canvas` gerando canvas perfeito de 1600x1942px sem erros de console.
+  - Sincronização completa da pasta `.agent/overview/PROJECT_STATUS.md`, `README.md` e histórico no `changelog.md`.
 
 ## Próximos Passos Sugeridos
-- Consulte `.agent/memory/todos.md` para itens pendentes de infraestrutura ou backlog futuro (ex: execução do script SQL de RLS no painel do Supabase).
+- Consulte `.agent/memory/todos.md` para itens pendentes de infraestrutura (como execução opcional do script SQL no painel do Supabase).
